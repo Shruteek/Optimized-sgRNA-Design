@@ -17,24 +17,63 @@ class CoreSequence:
     NucleotideFeaturesDict = {'A1': 1}
 
     def __init__(self, CoreSequence, offTargetCandidates):
-        self.seedSequence = CoreSequence;
-        self.offTargetSequences = offTargetCandidates;
+        self.seedSequence = CoreSequence
+        self.offTargetSequences = offTargetCandidates
+        if not self.validRNA(self.seedSequence):
+            raise ValueError("The given Core Sequence is not valid RNA:" + self.seedSequence)
+        self.onTargetScore = self.calcOnTargetScore(self.complementaryDNA(self.seedSequence))
+        self.offTargetScores = []
+        for candidate in offTargetCandidates:
+            if not self.validDNA(candidate):
+                raise ValueError("A given off-target sequence is not valid DNA:" + candidate)
+            self.offTargetScores.append(self.calcOffTargetScore(self.complementaryDNA(self.seedSequence), candidate))
+        self.heuristic = self.calcHeuristic(self.onTargetScore, self.offTargetScores)
 
     """Method that returns a boolean representing whether the input sequence is a valid DNA sequence."""
     def validDNA(self, DNASequence):
+        validDNABasePairs = "ACTG"
+        for nucleotide in DNASequence:
+            if not validDNABasePairs.__contains__(nucleotide):
+                return False
         return True
 
     """Method that returns a boolean representing whether the input sequence is a valid RNA sequence."""
     def validRNA(self, RNASequence):
+        validRNABasePairs = "ACUG"
+        for nucleotide in RNASequence:
+            if not validRNABasePairs.__contains__(nucleotide):
+                return False
         return True
 
     """Method that returns the complementary RNA strand sequence to the given input DNA sequence."""
     def complementaryRNA(self, sequence):
-        return "ACUG"
+        complement = ""
+        for nucleotide in sequence:
+            if nucleotide == "A":
+                complement = complement + "U"
+            elif nucleotide == "C":
+                complement = complement + "G"
+            elif nucleotide == "T":
+                complement = complement + "A"
+            elif nucleotide == "G":
+                complement = complement + "C"
+        return complement
 
     """Method that returns the complementary DNA strand sequence to the given input DNA or RNA sequence."""
     def complementaryDNA(self, sequence):
-        return "ACTG"
+        complement = ""
+        for nucleotide in sequence:
+            if nucleotide == "A":
+                complement = complement + "T"
+            elif nucleotide == "C":
+                complement = complement + "G"
+            elif nucleotide == "T":
+                complement = complement + "A"
+            elif nucleotide == "U":
+                complement = complement + "A"
+            elif nucleotide == "G":
+                complement = complement + "C"
+        return complement
 
     """Method that returns the calculated on-target score of the given target sequence, assuming a perfectly 
     complementary RNA seed sequence on the sgRNA. """
@@ -45,3 +84,11 @@ class CoreSequence:
     seed sequence. """
     def calcOffTargetScore(self, targetSequence):
         return 0.0
+
+    """Method that takes in an on-target score and a list of off-target scores, and calculates a general heuristic to 
+    measure the effectiveness of the core sequence. """
+    def calcHeuristic(self, onTargetScore, offTargetScores):
+        heuristic = onTargetScore
+        for offTargetScore in offTargetScores:
+            heuristic = heuristic - offTargetScore
+        return heuristic
