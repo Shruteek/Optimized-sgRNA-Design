@@ -17,16 +17,16 @@ class CoreSequence:
     NucleotideFeaturesDict = {'A1': 1}
 
     def __init__(self, CoreSequence, offTargetCandidates):
-        self.seedSequence = CoreSequence
+        self.guideSequence = CoreSequence
         self.offTargetSequences = offTargetCandidates
-        if not self.validRNA(self.seedSequence):
-            raise ValueError("The given Core Sequence is not valid RNA:" + self.seedSequence)
-        self.onTargetScore = self.calcOnTargetScore(self.complementaryDNA(self.seedSequence))
+        if not self.validRNA(self.guideSequence):
+            raise ValueError("The given Core Sequence is not valid RNA:" + self.guideSequence)
+        self.onTargetScore = self.calcOnTargetScore(self.complementaryDNA(self.guideSequence))
         self.offTargetScores = []
         for candidate in offTargetCandidates:
             if not self.validDNA(candidate):
                 raise ValueError("A given off-target sequence is not valid DNA:" + candidate)
-            self.offTargetScores.append(self.calcOffTargetScore(self.complementaryDNA(self.seedSequence), candidate))
+            self.offTargetScores.append(self.calcOffTargetScore(self.complementaryDNA(self.guideSequence), candidate))
         self.heuristic = self.calcHeuristic(self.onTargetScore, self.offTargetScores)
 
     """Method that returns a boolean representing whether the input sequence is a valid DNA sequence."""
@@ -76,12 +76,12 @@ class CoreSequence:
         return complement
 
     """Method that returns the calculated on-target score of the given target sequence, assuming a perfectly 
-    complementary RNA seed sequence on the sgRNA. """
+    complementary RNA guide sequence on the sgRNA. """
     def calcOnTargetScore(self, targetSequence):
         return 1.0
 
     """Method that returns the calculated off-target score of the given sequence with respect to to the instance RNA 
-    seed sequence. """
+    guide sequence. """
     def calcOffTargetScore(self, targetSequence):
         return 0.0
 
