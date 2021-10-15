@@ -19,31 +19,18 @@ class SpacerSequence:
     def __init__(self, coreSequence, genome):
         self.guideSequence = coreSequence
         self.offTargetSequences = genome.findOffTargets()
-        if not self.validRNA(self.guideSequence):
+        if not self.isValidRNA(self.guideSequence):
             raise ValueError("The given Core Sequence is not valid RNA:" + self.guideSequence)
         self.onTargetScore = self.calcOnTargetScore(self.complementaryDNA(self.guideSequence))
         self.offTargetScores = []
         for candidate in self.offTargetSequences:
-            if not self.validDNA(candidate):
-                raise ValueError("A given off-target sequence is not valid DNA:" + candidate)
-            self.offTargetScores.append(self.calcOffTargetScore(self.complementaryDNA(self.guideSequence), candidate))
-        self.heuristic = self.calcHeuristic(self.onTargetScore, self.offTargetScores)
-
-    def __init__(self, coreSequence, offTargetCandidates):
-        self.guideSequence = coreSequence
-        self.offTargetSequences = offTargetCandidates
-        if not self.validRNA(self.guideSequence):
-            raise ValueError("The given Core Sequence is not valid RNA:" + self.guideSequence)
-        self.onTargetScore = self.calcOnTargetScore(self.complementaryDNA(self.guideSequence))
-        self.offTargetScores = []
-        for candidate in self.offTargetSequences:
-            if not self.validDNA(candidate):
+            if not self.isValidDNA(candidate):
                 raise ValueError("A given off-target sequence is not valid DNA:" + candidate)
             self.offTargetScores.append(self.calcOffTargetScore(self.complementaryDNA(self.guideSequence), candidate))
         self.heuristic = self.calcHeuristic(self.onTargetScore, self.offTargetScores)
 
     """Method that returns a boolean representing whether the input sequence is a valid DNA sequence."""
-    def validDNA(self, DNASequence):
+    def isValidDNA(self, DNASequence):
         validDNABasePairs = "ACTG"
         for nucleotide in DNASequence:
             if not validDNABasePairs.__contains__(nucleotide):
@@ -51,7 +38,7 @@ class SpacerSequence:
         return True
 
     """Method that returns a boolean representing whether the input sequence is a valid RNA sequence."""
-    def validRNA(self, RNASequence):
+    def isValidRNA(self, RNASequence):
         validRNABasePairs = "ACUG"
         for nucleotide in RNASequence:
             if not validRNABasePairs.__contains__(nucleotide):
