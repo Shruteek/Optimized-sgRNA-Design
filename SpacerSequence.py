@@ -31,6 +31,8 @@ class SpacerSequence:
 
     """Method that returns a boolean representing whether the input sequence is a valid DNA sequence."""
     def isValidDNA(self, DNASequence):
+        if not isinstance(DNASequence, str):
+            return False
         validDNABasePairs = "ACTG"
         for nucleotide in DNASequence:
             if not validDNABasePairs.__contains__(nucleotide):
@@ -39,6 +41,8 @@ class SpacerSequence:
 
     """Method that returns a boolean representing whether the input sequence is a valid RNA sequence."""
     def isValidRNA(self, RNASequence):
+        if not isinstance(RNASequence, str):
+            return False
         validRNABasePairs = "ACUG"
         for nucleotide in RNASequence:
             if not validRNABasePairs.__contains__(nucleotide):

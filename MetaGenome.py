@@ -6,13 +6,12 @@ class MetaGenome:
     __Name = ""
     __Sequences = []
 
-    """Initialization function that """
-    def __init__(self, metaGenome, name="MetaGenome"):
+    """Initialization function that takes in the local filename of a metaGenome (and, optionally, a name for that 
+    metagenome) and instantiates."""
+    def __init__(self, metaGenome, name="Generic MetaGenome"):
         self.__Name = name
-        if not isinstance(metaGenome, str):
-            print("The passed in metaGenome file name is not a string:" + metaGenome)
-        elif not ".fasta" in metaGenome or not str.lower(metaGenome[-6:]) == ".fasta":
-            print("The passed in metaGenome file name is not a .fasta file.")
+        if self.isValidFasta(metaGenome):
+            print("The given metaGenome file is not a valid .fasta string file name.")
         else:
             self.addSequences(metaGenome)
 
@@ -20,7 +19,8 @@ class MetaGenome:
     def getName(self):
         return self.__Name
 
-    """Method that uses the findOffTargets method of each Sequence in __Sequences, compiles them, and returns."""
+    """Method that takes an input String spacerSequence and uses the findOffTargets method of each Sequence in 
+    __Sequences, compiles them, and returns."""
     def findOffTargets(self, spacerSequence):
         offTargets = []
         for sequence in self.__Sequences:
@@ -30,7 +30,7 @@ class MetaGenome:
                 offTargets = [offTargets, sequence.findOffTargets(spacerSequence)]
         return offTargets
 
-    """Adds sequences directly from a .FASTA file."""
+    """Method that takes in the local filename of a sequence file and adds sequences directly from it to __Sequences."""
     def addSequences(self, sequencesFile):
         for record in SeqIO.parse(sequencesFile, "fasta"):
             if isinstance(record, SeqIO.SeqRecord):
@@ -40,7 +40,7 @@ class MetaGenome:
     """Returns the sequence at the given index in __Sequences, ensuring the validity of the index."""
     def getSequenceAtIndex(self, index):
         if index < 0 or index >= len(self.__Sequences):
-            print("Invalid index of " + index + "compared to __Sequences size of " + len(self.__Sequences))
+            print("Invalid given index of " + index + "for __Sequences size of " + len(self.__Sequences))
             return None
         else:
             return self.__Sequences[index]
@@ -52,9 +52,14 @@ class MetaGenome:
             return None
         else:
             for sequence in self.__Sequences:
-                if not sequence.seq.find(subsequence) == -1:
+                if not sequence.__Record.seq.find(subsequence) == -1:
                     return sequence
             print("Sequence not find in __Sequences.")
             return None
+
+    """Takes in a filename and returns whether the given variable is a valid fasta filename"""
+    def isValidFasta(self, sequencesFile):
+        return isinstance(sequencesFile,str) and ".fasta" in sequencesFile and \
+               str.lower(sequencesFile[-6:]) == ".fasta" and len(sequencesFile) > 6
 
 
