@@ -1,6 +1,7 @@
 import unittest
 from MetaGenome import MetaGenome
 from SpacerSequence import SpacerSequence
+from Sequence import Sequence
 
 class MetaGenomeTests(unittest.TestCase):
     def testInstantiation(self):

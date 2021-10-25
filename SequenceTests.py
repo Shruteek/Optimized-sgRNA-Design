@@ -18,6 +18,7 @@ class SequenceTests(unittest.TestCase):
             seqRecord = record
         seq = Sequence.Sequence(seqRecord)
         print(seq.correlateSequences(key, genome))
+        self.assertEqual(True, False)
 
 
 if __name__ == '__main__':

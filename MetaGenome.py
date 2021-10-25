@@ -1,41 +1,41 @@
 from Bio import SeqIO
-from SpacerSequence import SpacerSequence
+from GenomeTools import *
 from Sequence import Sequence
+
 
 class MetaGenome:
 
-    """Initialization method that takes in the local .FASTA filename of a metaGenome (and, optionally, a name for that 
-    metagenome) and instantiates."""
     def __init__(self, metaGenome, name="Generic MetaGenome"):
+        """Initialization method that takes in the local .FASTA filename of a metaGenome (and, optionally, a name for that
+            metagenome) and instantiates."""
         self.__Name = name
         self.__Sequences = []
-        if not self.isValidFasta(metaGenome):
+        if not isValidFasta(metaGenome):
             print("The given metaGenome file is not a valid .fasta string file name:" + metaGenome)
         else:
             self.addSequences(metaGenome)
 
-    """Getter method that returns the name of the MetaGenome."""
     def getName(self):
+        """Getter method that returns the name of the MetaGenome."""
         return self.__Name
 
-    """Takes in a string name and sets the Sequence name accordingly."""
-
     def setName(self, name):
+        """Takes in a string name and sets the Sequence name accordingly."""
         if not isinstance(name, str) or len(name) <= 0:
             print("Given name is not a valid string name: " + name)
         else:
             self.__Name = name
 
-    """Method that returns the size of the Sequence array."""
     def size(self):
+        """Method that returns the size of the Sequence array."""
         return len(self.__Sequences)
 
-    """Returns a list containing either the string sequence at the given key index or the string sequences with the 
-    given string key sequence in __Sequences, ensuring the validity of the key input as either an index or a string 
-    sequence."""
     def getSequence(self, key):
+        """Returns a list containing either the string sequence at the given key index or the string sequences with the
+            given string key sequence in __Sequences, ensuring the validity of the key input as either an index or a string
+            sequence."""
         if isinstance(key, str):
-            if not SpacerSequence.isValidDNA(None, key) and not SpacerSequence.isValidRNA(None, key):
+            if not isValidDNA(None, key) and not isValidRNA(None, key):
                 print("Subsequence entered is neither valid RNA nor valid DNA.")
                 return [None]
             else:
@@ -56,9 +56,9 @@ class MetaGenome:
         else:
             print("Invalid sequence key: must be int (index) or str (subsequence).")
 
-    """Method that takes an input String spacerSequence and uses the findOffTargets method of each Sequence in 
-    __Sequences, compiles them, and returns."""
     def findOffTargets(self, spacerSequence):
+        """Method that takes an input String spacerSequence and uses the findOffTargets method of each Sequence in
+            __Sequences, compiles them, and returns."""
         offTargets = []
         if not len(spacerSequence) == 20:
             print("Warning: given spacerSequence is not 20 nucleotides long: " + spacerSequence)
@@ -69,8 +69,8 @@ class MetaGenome:
                 offTargets.append(sequence.findOffTargets(spacerSequence))
         return offTargets
 
-    """Method that takes in the local filename of a sequence file and adds sequences directly from it to __Sequences."""
     def addSequences(self, sequencesFile):
+        """Method that takes in the local filename of a sequence file and adds sequences directly from it to __Sequences."""
         count = 1
         for record in SeqIO.parse(sequencesFile, "fasta"):
             if not isinstance(record, SeqIO.SeqRecord):
@@ -78,10 +78,3 @@ class MetaGenome:
             else:
                 self.__Sequences.append(Sequence(record, "Sequence " + str(count)))
             count = count + 1
-
-    """Takes in a filename and returns whether the given variable is a valid fasta filename"""
-    def isValidFasta(self, sequencesFile):
-        return isinstance(sequencesFile,str) and ".fasta" in str.lower(sequencesFile) and \
-               str.lower(sequencesFile[-6:]) == ".fasta" and len(sequencesFile) > 6
-
-
