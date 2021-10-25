@@ -1,3 +1,5 @@
+import math
+
 from MetaGenome import MetaGenome
 from GenomeTools import *
 
@@ -66,45 +68,88 @@ class SpacerSequence:
             checking to ensure the coreSequence is in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp
             downstream, as well as that genome is a MetaGenome."""
         if not isValidCoreSequence(coreSequence):
-            self.__guideSequence = ""
+            self.__guideSequence = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            print("Given coreSequence is invalid: " + coreSequence)
         else:
             self.__guideSequence = coreSequence
         if not isinstance(genome, MetaGenome):
             print("Given genome is not a valid MetaGenome object.")
             self.__offTargetSequences = []
         else:
-            self.__offTargetSequences = genome.findOffTargets()
-        self.__oonTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
+            self.__offTargetSequences = genome.findOffTargets(self.__guideSequence[6:26])
+        self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
         self.__offTargetScores = []
-        for candidate in self.__offTargetSequences:
-            self.__offTargetScores.append(self.__calcOffTargetScore(complementaryDNA(candidate)))
+        for offTargetSequenceList in self.__offTargetSequences:
+            for offTargetCandidate in offTargetSequenceList:
+                self.__offTargetScores.append(self.__calcOffTargetScore(complementaryDNA(offTargetCandidate)))
         self.__heuristic = self.__calcHeuristic()
 
     def __calcOnTargetScore(self, targetSequence):
-        """Method that returns the calculated on-target score of the given target DNA sequence, assuming a perfectly
-            complementary RNA guide sequence on the sgRNA."""
-        if len(targetSequence) == 0:
+        """Method that takes in a 35 bp target DNA sequence and returns the calculated on-target score of it, assuming a
+        perfectly complementary RNA guide sequence on the sgRNA."""
+        if len(targetSequence) != 35:
             return 0
         CRISPRscanSubscore = 0
         reversePAMs = 0
         forwardPAMs = 0
-        coreSequence = targetSequence
-        for c in len(coreSequence):
+        penaltyScore = 0
+        GCADensityScore = 0
+        for c in range(len(targetSequence)):
             if 5 < c < 25:
-                if coreSequence[c:c + 1] == "GG":
+                if targetSequence[c:c + 1] == "GG":
                     forwardPAMs = forwardPAMs + 1
-                if coreSequence[c:c + 1] == "CC":
+                if targetSequence[c:c + 1] == "CC":
                     reversePAMs = reversePAMs + 1
-            if self.NucleotideFeaturesDict.has_key(coreSequence[c] + str(c)):
-                CRISPRscanSubscore = CRISPRscanSubscore + self.NucleotideFeaturesDict[coreSequence[c] + str(c)]
-            if c < len(coreSequence) - 1 and self.NucleotideFeaturesDict.has_key(coreSequence[c:(c + 1)] + str(c)):
-                CRISPRscanSubscore = CRISPRscanSubscore + self.NucleotideFeaturesDict[coreSequence[c:(c + 1)] + str(c)]
-        return CRISPRscanSubscore / self.PAMDensityScoreMatrix[reversePAMs][forwardPAMs]
+                if targetSequence[c] == "G":
+                    GCADensityScore = GCADensityScore + 1.0
+                elif targetSequence[c] == "C":
+                    GCADensityScore = GCADensityScore + 0.5
+                elif targetSequence[c] == "A":
+                    GCADensityScore = GCADensityScore - 0.1
+            if targetSequence[c] + str(c + 1) in self.NucleotideFeaturesDict.keys():
+                CRISPRscanSubscore = CRISPRscanSubscore + self.NucleotideFeaturesDict[targetSequence[c] + str(c + 1)]
+            if c < len(targetSequence) - 1 and (targetSequence[c:(c + 2)] + str(c + 1)) in self.NucleotideFeaturesDict.keys():
+                CRISPRscanSubscore = CRISPRscanSubscore + self.NucleotideFeaturesDict[targetSequence[c:(c + 2)] + str(c + 1)]
+        CRISPRscanSubscore = (CRISPRscanSubscore + 0.6555) / 1.9495 * 100
+        GCADensityScore = GCADensityScore / 20
+        if self.PAMDensityScoreMatrix[reversePAMs][forwardPAMs] > 1:
+            penaltyScore = self.PAMDensityScoreMatrix[reversePAMs][forwardPAMs] * GCADensityScore
+        elif self.PAMDensityScoreMatrix[reversePAMs][forwardPAMs] == 1:
+            penaltyScore = self.PAMDensityScoreMatrix[reversePAMs][forwardPAMs] - GCADensityScore / 5
+        return CRISPRscanSubscore / penaltyScore
 
-    def __calcOffTargetScore(self, targetSequence):
-        """Method that returns the calculated off-target score of the given DNA sequence if the instance RNA guide sequence
-            were to attempt binding. """
-        return 0.0
+    def __calcOffTargetScore(self, offTargetSequence):
+        """Method that takes in a DNA potential off-target sequence and returns the calculated off-target score of the
+        given sequence if the instance RNA guide sequence were to attempt binding. """
+        if len(offTargetSequence) != 35:
+            return 1
+        HsuMismatchSubscore = 1
+        proximityMismatchSubscore = 0
+        steppedProximityMismatchSubscore = 1
+        indexDict = 0
+        offTargetTargetSequence = offTargetSequence[6:26]
+        targetSequence = complementaryDNA(self.__guideSequence)
+        for c in range(len(offTargetTargetSequence)):
+            if offTargetTargetSequence[c] != targetSequence[c + 6]:
+                proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
+                if c > 0:
+                    indexDict = self.MismatchToHsuIndexDict[
+                        complementaryDNA(targetSequence[c + 6]) + '->' + offTargetTargetSequence[c]]
+                    HsuMismatchSubscore = HsuMismatchSubscore * self.HsuMatrix[indexDict][c - 1]
+                if 20 - c <= 6:
+                    steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.1
+                elif 20 - c <= 12:
+                    steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.05
+                else:
+                    steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.0125
+        proximityMismatchSubscore = (3.5477 - proximityMismatchSubscore) / 3.5477
+        activityRatio = self.__calcOnTargetScore(offTargetSequence) / self.__onTargetScore
+        print("Hsu Mismatch Subscore: " + str(HsuMismatchSubscore))
+        print("Proximity Mismatch Subscore: " + str(proximityMismatchSubscore))
+        print("Stepped Proximity Mismatch Subscore: " + str(steppedProximityMismatchSubscore))
+        print("Activity ratio: " + str(activityRatio))
+        return (math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
+               * (proximityMismatchSubscore ** 6) / 4
 
     def __calcHeuristic(self):
         """Method that takes in an on-target score and a list of off-target scores, and calculates a general heuristic to
@@ -118,7 +163,7 @@ class SpacerSequence:
         """Getter method that returns the calculated on target score."""
         return self.__onTargetScore
 
-    def getOffTargetScore(self):
+    def getOffTargetScores(self):
         """Getter method that returns the calculated off target scores."""
         return self.__offTargetScores
 

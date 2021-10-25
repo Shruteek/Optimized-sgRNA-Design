@@ -35,7 +35,7 @@ class MetaGenome:
             given string key sequence in __Sequences, ensuring the validity of the key input as either an index or a string
             sequence."""
         if isinstance(key, str):
-            if not isValidDNA(None, key) and not isValidRNA(None, key):
+            if not isValidDNA(key) and not isValidRNA(key):
                 print("Subsequence entered is neither valid RNA nor valid DNA.")
                 return [None]
             else:
@@ -57,7 +57,7 @@ class MetaGenome:
             print("Invalid sequence key: must be int (index) or str (subsequence).")
 
     def findOffTargets(self, spacerSequence):
-        """Method that takes an input String spacerSequence and uses the findOffTargets method of each Sequence in
+        """Method that takes an input String RNA spacerSequence and uses the findOffTargets method of each Sequence in
             __Sequences, compiles them, and returns."""
         offTargets = []
         if not len(spacerSequence) == 20:

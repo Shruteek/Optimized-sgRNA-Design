@@ -34,8 +34,8 @@ def isValidCoreSequence(coreSequence):
         return False
     elif not isValidRNA(coreSequence):
         print("Given sequence is not valid RNA: " + coreSequence)
-    elif not (len(coreSequence) == 35 and coreSequence[27:28] == "GG"):
-        print("Given RNA sequence is not valid RNA: " + coreSequence)
+    elif not (len(coreSequence) == 35 and coreSequence[27:29] == "CC"):
+        print("Given RNA sequence is not 35 bp with a PAM: " + coreSequence)
         return False
     else:
         return True
@@ -73,20 +73,30 @@ def complementaryDNA(sequence):
     return complement
 
 
-def correlateSequences(keySequence, substrateSequence):
-    """Takes in a string keySequence and a string substrateSequence, cross-correlates keySequence along
+def crossCorrelateSequences(spacerSequence, substrateSequence):
+    """Takes in a DNA string spacerSequence and a DNA string substrateSequence, cross-correlates keySequence along
         substrateSequence, and returns the numerical results as a list of integers."""
-    if not isValidDNA(None, keySequence) or not isValidDNA(None, substrateSequence):
-        print("Given sequences are not valid DNA: " + keySequence + " and " + substrateSequence)
+    if not isValidDNA(spacerSequence) or not isValidDNA(substrateSequence):
+        print("Given sequences are not valid DNA: " + spacerSequence + " and " + substrateSequence)
         return []
+    elif len(spacerSequence) != 20:
+        print("Given spacerSequence is not 20 nucleotides long.")
     else:
         crosscorrelation = []
-        for shift in range(len(substrateSequence) - len(keySequence) + 1):
-            correlation = 0
-            for nucleotideIndex in range(len(keySequence)):
-                if keySequence[nucleotideIndex] == substrateSequence[nucleotideIndex + shift]:
-                    correlation = correlation + 1
-                elif substrateSequence[nucleotideIndex + shift] == "n":
-                    correlation = correlation + 1
-            crosscorrelation.append(correlation)
+        for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
+            if substrateSequence[(shift + 27):(shift + 29)] == "GG":
+                correlation = correlateSequences(spacerSequence, substrateSequence[(shift + 6):(shift + 26)])
+                crosscorrelation.append(correlation)
         return crosscorrelation
+
+
+def correlateSequences(keySequence, substrateSubsequence):
+    """Takes in an arbitrary string keySequence and an arbitrary string substrate and calculates the correlation
+    between them, where equivalent characters add 1 and other characters add 0, then returns the correlation."""
+    correlation = 0
+    for nucleotideIndex in range(len(keySequence)):
+        if keySequence[nucleotideIndex] == substrateSubsequence[nucleotideIndex]:
+            correlation = correlation + 1
+        elif substrateSubsequence[nucleotideIndex] == "N" or keySequence[nucleotideIndex] == "N":
+            correlation = correlation + 1
+    return correlation

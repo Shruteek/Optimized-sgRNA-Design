@@ -58,33 +58,22 @@ class Sequence:
         return self.__Record.seq.find(subsequence) == -1
 
     def findOffTargets(self, spacerSequence):
-        """Tales in a string spacerSequence and cross-correlates it against the stored genome, returning all genome
-            sequences within the specified MismatchStrictness."""
-        if not isValidRNA(None, spacerSequence):
+        """Takes in a DNA string spacerSequence and cross-correlates its seed sequence against the stored genome,
+        identifying all genome sequences within the specified SeedMismatchStrictness, then correlates the whole
+        spacerSequence against the initially matching genome sequences to identify and return all genome sequences
+        within the specified MismatchStrictness."""
+        if not isValidRNA(spacerSequence):
             print("Given spacerSequence is not valid RNA: " + spacerSequence)
             return None
         else:
             sequenceToMatch = complementaryDNA(spacerSequence)
             offTargets = []
-            crosscorrelation = correlateSequences(sequenceToMatch, str(self.__Record.seq))
+            substrateSequence = str(self.__Record.seq)
+            crosscorrelation = crossCorrelateSequences(sequenceToMatch, substrateSequence)
             for shift in range(len(crosscorrelation)):
                 if crosscorrelation[shift] >= len(sequenceToMatch) - self.__MismatchStrictness:
-                    offTargets.append(str(self.__Record.seq)[shift:(shift + len(sequenceToMatch))])
-            return offTargets
-
-    def findOffTargetsEfficiently(self, spacerSequence):
-        """Takes in a string spacerSequence and cross-correlates its seed sequence against the stored genome, identifying
-            all genome sequences within the specified SeedMismatchStrictness, then correlates the whole spacerSequence against
-            the initially matching genome sequences to identify and return all genome sequences within the specified
-            MismatchStrictness."""
-        if not isValidRNA(None, spacerSequence):
-            print("Given spacerSequence is not valid RNA: " + spacerSequence)
-            return None
-        else:
-            sequenceToMatch = complementaryDNA(spacerSequence)
-            offTargets = []
-            crosscorrelation = correlateSequences(sequenceToMatch, str(self.__Record.seq))
-            for shift in range(len(crosscorrelation)):
-                if crosscorrelation[shift] >= len(sequenceToMatch) - self.__MismatchStrictness:
-                    offTargets.append(str(self.__Record.seq)[shift:(shift + len(sequenceToMatch))])
+                    print("Off-target sequence: " + substrateSequence[shift:(shift + 6 + 6 + 20 + 3)]
+                          + " against " + complementaryDNA(spacerSequence))
+                    print("with a shift of " + str(crosscorrelation[shift]))
+                    offTargets.append(substrateSequence[shift:(shift + 6 + 6 + 20 + 3)])
             return offTargets

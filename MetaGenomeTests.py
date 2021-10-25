@@ -1,8 +1,7 @@
 import unittest
 from MetaGenome import MetaGenome
 from SpacerSequence import SpacerSequence
-from Sequence import Sequence
-
+from GenomeTools import *
 class MetaGenomeTests(unittest.TestCase):
     def testInstantiation(self):
         metaGen = MetaGenome("test.fasta")
@@ -17,13 +16,13 @@ class MetaGenomeTests(unittest.TestCase):
 
     def testIsValidFasta(self):
         metaGen = MetaGenome("test.fasta")
-        self.assertFalse(metaGen.isValidFasta("test"))
-        self.assertFalse(metaGen.isValidFasta(".fasta"))
-        self.assertFalse(metaGen.isValidFasta(".FASTA"))
-        self.assertTrue(metaGen.isValidFasta("test.fasta"))
-        self.assertTrue(metaGen.isValidFasta("test.FASTA"))
-        self.assertTrue(metaGen.isValidFasta("t.FASTA"))
-        self.assertTrue(metaGen.isValidFasta("t.fasta"))
+        self.assertFalse(isValidFasta("test"))
+        self.assertFalse(isValidFasta(".fasta"))
+        self.assertFalse(isValidFasta(".FASTA"))
+        self.assertTrue(isValidFasta("test.fasta"))
+        self.assertTrue(isValidFasta("test.FASTA"))
+        self.assertTrue(isValidFasta("t.FASTA"))
+        self.assertTrue(isValidFasta("t.fasta"))
 
     def testFindOffTargets(self):
         metaGen = MetaGenome("test.fasta")
