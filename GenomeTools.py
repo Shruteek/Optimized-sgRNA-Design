@@ -26,14 +26,15 @@ def isValidRNA(RNASequence):
     return True
 
 
-def isValidCoreSequence(coreSequence):
+def isValidGuideSequence(coreSequence):
     """Method that returns whether a given sequence is a valid string representing a 35 base-pair RNA sequence in the
         format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream"""
     if not isinstance(coreSequence, str):
         print("Given sequence is not a valid string: " + coreSequence)
         return False
     elif not isValidRNA(coreSequence):
-        print("Given sequence is not valid RNA: " + coreSequence)
+        print("Given guide sequence is not valid RNA: " + coreSequence)
+        return False
     elif not (len(coreSequence) == 35 and coreSequence[27:29] == "CC"):
         print("Given RNA sequence is not 35 bp with a PAM: " + coreSequence)
         return False
@@ -73,20 +74,21 @@ def complementaryDNA(sequence):
     return complement
 
 
-def crossCorrelateSequences(spacerSequence, substrateSequence):
-    """Takes in a DNA string spacerSequence and a DNA string substrateSequence, cross-correlates keySequence along
+def crossCorrelateSequences(targetSequence, substrateSequence):
+    """Takes in a DNA string targetSequence and a DNA string substrateSequence, cross-correlates keySequence along
         substrateSequence, and returns the numerical results as a list of integers."""
-    if not isValidDNA(spacerSequence) or not isValidDNA(substrateSequence):
-        print("Given sequences are not valid DNA: " + spacerSequence + " and " + substrateSequence)
+    if not isValidDNA(targetSequence) or not isValidDNA(substrateSequence):
+        print("Given sequences are not valid DNA: " + targetSequence + " and " + substrateSequence)
         return []
-    elif len(spacerSequence) != 20:
-        print("Given spacerSequence is not 20 nucleotides long.")
+    elif len(targetSequence) != 20:
+        print("Given targetSequence is not 20 nucleotides long.")
     else:
         crosscorrelation = []
         for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
+            correlation = 0
             if substrateSequence[(shift + 27):(shift + 29)] == "GG":
-                correlation = correlateSequences(spacerSequence, substrateSequence[(shift + 6):(shift + 26)])
-                crosscorrelation.append(correlation)
+                correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
+            crosscorrelation.append(correlation)
         return crosscorrelation
 
 
@@ -94,9 +96,14 @@ def correlateSequences(keySequence, substrateSubsequence):
     """Takes in an arbitrary string keySequence and an arbitrary string substrate and calculates the correlation
     between them, where equivalent characters add 1 and other characters add 0, then returns the correlation."""
     correlation = 0
-    for nucleotideIndex in range(len(keySequence)):
-        if keySequence[nucleotideIndex] == substrateSubsequence[nucleotideIndex]:
-            correlation = correlation + 1
-        elif substrateSubsequence[nucleotideIndex] == "N" or keySequence[nucleotideIndex] == "N":
-            correlation = correlation + 1
+    if not (isinstance(keySequence, str) and isinstance(substrateSubsequence, str)):
+        print("Given sequences to correlate are not strings.")
+    elif not len(keySequence) == len(substrateSubsequence):
+        print("Sequences to correlate are not same length: " + keySequence + " and " + substrateSubsequence)
+    else:
+        for nucleotideIndex in range(len(keySequence)):
+            if keySequence[nucleotideIndex] == substrateSubsequence[nucleotideIndex]:
+                correlation = correlation + 1
+            elif substrateSubsequence[nucleotideIndex] == "N" or keySequence[nucleotideIndex] == "N":
+                correlation = correlation + 1
     return correlation

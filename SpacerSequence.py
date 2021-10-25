@@ -6,7 +6,15 @@ from GenomeTools import *
 
 class SpacerSequence:
     """A class where each instance represents a unique 35-base pair sequence on an sgRNA. The class contains instance
-    variables and methods that analyze the on-target and off-target efficiency and effects of the sequence."""
+    variables and methods that analyze the on-target and off-target efficiency and effects of the sequence.
+    TERMS KEY:
+    Guide sequence: 35 base-pair 3'-5' RNA sequence with 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream
+    Target guide sequence: 35 base-pair DNA sequence with 6 bp upstream, 20 bp target sequence, 3 bp PAM-match, and
+        6 bp downstream
+    Spacer sequence: 20 base-pair RNA sequence that complements the 20 DNA nucleotide target sequence on the genome
+    Target sequence: 20 base-pair DNA sequence that complements the 20 RNA nucleotide spacer sequence on the sgRNA
+    PAM: 3 base-pair RNA sequence on the guide sequence in the form 5'-NCC-3'
+    """
     HsuMatrix = [
         [1.6533, 0.9030, 1.5977, 0.9235, 0.8070, 0.9632, 1.0163, 0.2658, 0.7119, 1.5211, 0.6942, 1.0434, 0.5255, 0.8981,
          0.7164, 0.8399, 0.5376, 0.2821, 0.6898],
@@ -63,29 +71,34 @@ class SpacerSequence:
                              [2.5, 2.5, 3.33, -1, -1, -1, -1],
                              [5, 5, -1, -1, -1, -1, -1]]
 
-    def __init__(self, coreSequence, genome):
-        """Initialization method that takes in a core sequence and an associated metaGenome class file and instantiates,
-            checking to ensure the coreSequence is in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp
-            downstream, as well as that genome is a MetaGenome."""
-        if not isValidCoreSequence(coreSequence):
+    def __init__(self, guideSequence, genome):
+        """Initialization method that takes in an RNA guide sequence and an associated metaGenome class file and
+        instantiates, checking to ensure the guideSequence is in the format 6 bp upstream, 20 bp spacer sequence,
+        3 bp PAM, 6 bp downstream, as well as that genome is a MetaGenome."""
+        if not isValidGuideSequence(guideSequence):
             self.__guideSequence = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-            print("Given coreSequence is invalid: " + coreSequence)
-        else:
-            self.__guideSequence = coreSequence
-        if not isinstance(genome, MetaGenome):
-            print("Given genome is not a valid MetaGenome object.")
+            self.__onTargetScore = 0
             self.__offTargetSequences = []
+            self.__offTargetScores = []
+            self.__heuristic = self.__calcHeuristic()
+        elif not isinstance(genome, MetaGenome):
+            print("Given genome is not a valid MetaGenome object.")
+            self.__guideSequence = guideSequence
+            self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
+            self.__offTargetSequences = []
+            self.__offTargetScores = []
         else:
+            self.__guideSequence = guideSequence
             self.__offTargetSequences = genome.findOffTargets(self.__guideSequence[6:26])
-        self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
-        self.__offTargetScores = []
-        for offTargetSequenceList in self.__offTargetSequences:
-            for offTargetCandidate in offTargetSequenceList:
-                self.__offTargetScores.append(self.__calcOffTargetScore(complementaryDNA(offTargetCandidate)))
-        self.__heuristic = self.__calcHeuristic()
+            self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
+            self.__offTargetScores = []
+            for offTargetSequenceList in self.__offTargetSequences:
+                for offTargetCandidate in offTargetSequenceList:
+                    self.__offTargetScores.append(self.__calcOffTargetScore(offTargetCandidate))
+            self.__heuristic = self.__calcHeuristic()
 
     def __calcOnTargetScore(self, targetSequence):
-        """Method that takes in a 35 bp target DNA sequence and returns the calculated on-target score of it, assuming a
+        """Method that takes in a 35 bp guide DNA sequence and returns the calculated on-target score of it, assuming a
         perfectly complementary RNA guide sequence on the sgRNA."""
         if len(targetSequence) != 35:
             return 0
@@ -128,13 +141,13 @@ class SpacerSequence:
         steppedProximityMismatchSubscore = 1
         indexDict = 0
         offTargetTargetSequence = offTargetSequence[6:26]
-        targetSequence = complementaryDNA(self.__guideSequence)
+        targetGuideSequence = complementaryDNA(self.__guideSequence)
         for c in range(len(offTargetTargetSequence)):
-            if offTargetTargetSequence[c] != targetSequence[c + 6]:
+            if offTargetTargetSequence[c] != targetGuideSequence[c + 6]:
                 proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
                 if c > 0:
                     indexDict = self.MismatchToHsuIndexDict[
-                        complementaryDNA(targetSequence[c + 6]) + '->' + offTargetTargetSequence[c]]
+                        complementaryDNA(targetGuideSequence[c + 6]) + '->' + offTargetTargetSequence[c]]
                     HsuMismatchSubscore = HsuMismatchSubscore * self.HsuMatrix[indexDict][c - 1]
                 if 20 - c <= 6:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.1
@@ -152,12 +165,16 @@ class SpacerSequence:
                * (proximityMismatchSubscore ** 6) / 4
 
     def __calcHeuristic(self):
-        """Method that takes in an on-target score and a list of off-target scores, and calculates a general heuristic to
-            measure the effectiveness of the core sequence. """
+        """Method that takes in an instance on-target score and an instance list of off-target scores, and calculates a
+        general heuristic to measure the effectiveness of the guide sequence. """
         heuristic = self.__onTargetScore
         for offTargetScore in self.__offTargetScores:
             heuristic = heuristic - offTargetScore
         return heuristic
+
+    def getSpacerSequence(self):
+        """Method that returns the string DNA guide sequence of the instance."""
+        return self.__guideSequence
 
     def getOnTargetScore(self):
         """Getter method that returns the calculated on target score."""
@@ -168,5 +185,5 @@ class SpacerSequence:
         return self.__offTargetScores
 
     def getHeuristic(self):
-        """Getter method that returns the calculated heuristic of the coreSequence."""
+        """Getter method that returns the calculated heuristic of the guideSequence."""
         return self.__heuristic

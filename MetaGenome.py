@@ -70,7 +70,7 @@ class MetaGenome:
         return offTargets
 
     def addSequences(self, sequencesFile):
-        """Method that takes in the local filename of a sequence file and adds sequences directly from it to __Sequences."""
+        """Method that takes in the filename of a sequence file and adds sequences directly from it to __Sequences."""
         count = 1
         for record in SeqIO.parse(sequencesFile, "fasta"):
             if not isinstance(record, SeqIO.SeqRecord):

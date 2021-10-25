@@ -9,8 +9,6 @@ class SpacerSequenceTests(unittest.TestCase):
         testGuideSequence = "TTTGGAGAGCCAAGGATTCGGATTCTCGGCTTCCA"
         metaGen = MetaGenome("test.fasta")
         newSpacer = SpacerSequence(complementaryRNA(testGuideSequence), metaGen)
-        print(newSpacer.getOnTargetScore())
-        print(newSpacer.getOffTargetScores())
         self.assertTrue(isinstance(newSpacer.getOnTargetScore(), float))
         self.assertTrue(isinstance(newSpacer.getOffTargetScores(), list))
         self.assertEqual(newSpacer.getOffTargetScores(), [])
@@ -21,13 +19,25 @@ class SpacerSequenceTests(unittest.TestCase):
         self.assertTrue(isinstance(newSpacer.getOffTargetScores(), list))
         self.assertEqual(newSpacer.getOffTargetScores(), [])
 
+        metaGen3 = MetaGenome("test.fasta")
+        newSpacer = SpacerSequence("THIS SHOULD BE INVALID", metaGen3)
+        self.assertEqual(newSpacer.getOnTargetScore(), 0)
+        self.assertEqual(newSpacer.getOffTargetScores(), [])
+        self.assertEqual(newSpacer.getHeuristic(), 0)
+
     def testCalcScores(self):
         testGuideSequence = "TTTGGAGAGCCAAGGATTCGGATTCTCGGCTTCCA"
         knownGuideSequence = "CCGGCGTTTTCCCGGAAGACAAAGTCGGGTTCATA"
-        metaGen3 = MetaGenome("pf3_illumina_subset.fasta")
-        newSpacer = SpacerSequence(complementaryRNA(knownGuideSequence), metaGen3)
+        metaGen = MetaGenome("test3.fasta")
+        newSpacer = SpacerSequence(complementaryRNA(knownGuideSequence), metaGen)
+        print(newSpacer.getOnTargetScore())
         print(newSpacer.getOffTargetScores())
-        self.assertEqual(1, 1)
+        self.assertEqual(newSpacer.getOffTargetScores()[0], 0.5)
+
+        metaGen2 = MetaGenome("pf3_illumina_subset.fasta")
+        newSpacer = SpacerSequence(complementaryRNA(knownGuideSequence), metaGen2)
+        print(newSpacer.getOnTargetScore())
+        print(newSpacer.getOffTargetScores())
 
 
 

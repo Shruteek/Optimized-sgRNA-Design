@@ -66,14 +66,14 @@ class Sequence:
             print("Given spacerSequence is not valid RNA: " + spacerSequence)
             return None
         else:
-            sequenceToMatch = complementaryDNA(spacerSequence)
+            targetSequence = complementaryDNA(spacerSequence)
             offTargets = []
             substrateSequence = str(self.__Record.seq)
-            crosscorrelation = crossCorrelateSequences(sequenceToMatch, substrateSequence)
+            crosscorrelation = crossCorrelateSequences(targetSequence, substrateSequence)
             for shift in range(len(crosscorrelation)):
-                if crosscorrelation[shift] >= len(sequenceToMatch) - self.__MismatchStrictness:
-                    print("Off-target sequence: " + substrateSequence[shift:(shift + 6 + 6 + 20 + 3)]
-                          + " against " + complementaryDNA(spacerSequence))
-                    print("with a shift of " + str(crosscorrelation[shift]))
+                if crosscorrelation[shift] >= len(targetSequence) - self.__MismatchStrictness:
+                    print("Off-target sequence: " + substrateSequence[shift + 6:(shift + 6 + 20 + 3)]
+                          + " against " + targetSequence)
+                    print("with a correlation of " + str(crosscorrelation[shift]))
                     offTargets.append(substrateSequence[shift:(shift + 6 + 6 + 20 + 3)])
             return offTargets
