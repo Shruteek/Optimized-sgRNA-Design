@@ -5,15 +5,15 @@ from Sequence import Sequence
 
 class MetaGenome:
 
-    def __init__(self, metaGenome, name="Generic MetaGenome"):
+    def __init__(self, metaGenomePath, name="Generic MetaGenome"):
         """Initialization method that takes in the local .FASTA filename of a metaGenome (and, optionally, a name for that
             metagenome) and instantiates."""
         self.__Name = name
         self.__Sequences = []
-        if not isValidFasta(metaGenome):
-            print("The given metaGenome file is not a valid .fasta string file name:" + metaGenome)
+        if not isValidFasta(metaGenomePath):
+            print("The given metaGenome file is not a valid .fasta string file name:" + metaGenomePath)
         else:
-            self.addSequences(metaGenome)
+            self.addSequences(metaGenomePath)
 
     def getName(self):
         """Getter method that returns the name of the MetaGenome."""
@@ -37,20 +37,20 @@ class MetaGenome:
         if isinstance(key, str):
             if not isValidDNA(key) and not isValidRNA(key):
                 print("Subsequence entered is neither valid RNA nor valid DNA.")
-                return [None]
+                return []
             else:
                 matchingSequences = []
                 for sequence in self.__Sequences:
                     if not sequence.hasSubsequence(key):
                         matchingSequences.append(sequence.getSequence())
                     if len(matchingSequences) == 0:
-                        return [None]
+                        return matchingSequences
                     else:
                         return matchingSequences
         elif isinstance(key, int):
             if key < 0 or key >= len(self.__Sequences):
                 print("Invalid given index of " + key + "for __Sequences size of " + len(self.__Sequences))
-                return [None]
+                return []
             else:
                 return [self.__Sequences[key].getSequence()]
         else:

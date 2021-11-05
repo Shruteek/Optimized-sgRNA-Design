@@ -26,32 +26,30 @@ class MetaGenomeTests(unittest.TestCase):
 
     def testFindOffTargets(self):
         metaGen = MetaGenome("test.fasta")
-        keySequence = SpacerSequence.complementaryRNA(None, "CCATCGT")
+        keySequence = complementaryRNA("CCATCGT")
         offTargets = metaGen.findOffTargets(keySequence)
         self.assertEqual(len(offTargets), 1)
-        self.assertEqual(len(offTargets[0]), 1)
-        self.assertEqual(str(offTargets[0][0]), "CCATCGT")
+        self.assertEqual(len(offTargets[0]), 0)
 
         metaGen2 = MetaGenome("test.fasta")
         offTargets = metaGen2.findOffTargets(keySequence)
         self.assertEqual(len(offTargets), 1)
-        self.assertEqual(len(offTargets[0]), 1)
-        self.assertEqual(str(offTargets[0][0]), "CCATCGT")
+        self.assertEqual(len(offTargets[0]), 0)
 
     def testFindSequenceWithSubsequence(self):
         metaGen = MetaGenome("test.fasta")
         self.assertEqual(len(metaGen.getSequence("C")), 1)
         self.assertEqual(metaGen.getSequence("C")[0], "CCATCGT")
-        self.assertEqual(len(metaGen.getSequence("N")), 1)
-        self.assertEqual(metaGen.getSequence("N")[0], None)
+        self.assertEqual(len(metaGen.getSequence("N")), 0)
+        self.assertEqual(metaGen.getSequence("N"), [])
         self.assertEqual(len(metaGen.getSequence(0)), 1)
         self.assertEqual(metaGen.getSequence(0)[0], "CCATCGT")
 
         metaGen2 = MetaGenome("test.fasta")
         self.assertEqual(len(metaGen2.getSequence("C")), 1)
         self.assertEqual(metaGen2.getSequence("C")[0], "CCATCGT")
-        self.assertEqual(len(metaGen2.getSequence("N")), 1)
-        self.assertEqual(metaGen2.getSequence("N")[0], None)
+        self.assertEqual(len(metaGen2.getSequence("N")), 0)
+        self.assertEqual(metaGen2.getSequence("N"), [])
         self.assertEqual(len(metaGen2.getSequence(0)), 1)
         self.assertEqual(metaGen2.getSequence(0)[0], "CCATCGT")
 

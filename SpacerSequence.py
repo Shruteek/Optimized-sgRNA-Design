@@ -1,7 +1,6 @@
 import math
-
-from MetaGenome import MetaGenome
 from GenomeTools import *
+from MetaGenome import MetaGenome
 
 
 class SpacerSequence:
@@ -9,11 +8,11 @@ class SpacerSequence:
     variables and methods that analyze the on-target and off-target efficiency and effects of the sequence.
     TERMS KEY:
     Guide sequence: 35 base-pair 3'-5' RNA sequence with 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream
-    Target guide sequence: 35 base-pair DNA sequence with 6 bp upstream, 20 bp target sequence, 3 bp PAM-match, and
-        6 bp downstream
+    Target guide sequence: 35 base-pair 5'-3' DNA sequence with 6 bp upstream, 20 bp target sequence, 3 bp PAM-match,
+        and 6 bp downstream
     Spacer sequence: 20 base-pair RNA sequence that complements the 20 DNA nucleotide target sequence on the genome
     Target sequence: 20 base-pair DNA sequence that complements the 20 RNA nucleotide spacer sequence on the sgRNA
-    PAM: 3 base-pair RNA sequence on the guide sequence in the form 5'-NCC-3'
+    PAM: 3 base-pair DNA sequence on the guide sequence in the form 5'-NGG-3'
     """
     HsuMatrix = [
         [1.6533, 0.9030, 1.5977, 0.9235, 0.8070, 0.9632, 1.0163, 0.2658, 0.7119, 1.5211, 0.6942, 1.0434, 0.5255, 0.8981,
@@ -121,8 +120,10 @@ class SpacerSequence:
                     GCADensityScore = GCADensityScore - 0.1
             if targetSequence[c] + str(c + 1) in self.NucleotideFeaturesDict.keys():
                 CRISPRscanSubscore = CRISPRscanSubscore + self.NucleotideFeaturesDict[targetSequence[c] + str(c + 1)]
-            if c < len(targetSequence) - 1 and (targetSequence[c:(c + 2)] + str(c + 1)) in self.NucleotideFeaturesDict.keys():
-                CRISPRscanSubscore = CRISPRscanSubscore + self.NucleotideFeaturesDict[targetSequence[c:(c + 2)] + str(c + 1)]
+            if c < len(targetSequence) - 1 and (targetSequence[c:(c + 2)] + str(c + 1)) \
+                    in self.NucleotideFeaturesDict.keys():
+                CRISPRscanSubscore = CRISPRscanSubscore + self.NucleotideFeaturesDict[targetSequence[c:(c + 2)] +
+                                                                                      str(c + 1)]
         CRISPRscanSubscore = (CRISPRscanSubscore + 0.6555) / 1.9495 * 100
         GCADensityScore = GCADensityScore / 20
         if self.PAMDensityScoreMatrix[reversePAMs][forwardPAMs] > 1:
@@ -157,10 +158,10 @@ class SpacerSequence:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.0125
         proximityMismatchSubscore = (3.5477 - proximityMismatchSubscore) / 3.5477
         activityRatio = self.__calcOnTargetScore(offTargetSequence) / self.__onTargetScore
-        print("Hsu Mismatch Subscore: " + str(HsuMismatchSubscore))
-        print("Proximity Mismatch Subscore: " + str(proximityMismatchSubscore))
-        print("Stepped Proximity Mismatch Subscore: " + str(steppedProximityMismatchSubscore))
-        print("Activity ratio: " + str(activityRatio))
+        # print("Hsu Mismatch Subscore: " + str(HsuMismatchSubscore))
+        # print("Proximity Mismatch Subscore: " + str(proximityMismatchSubscore))
+        # print("Stepped Proximity Mismatch Subscore: " + str(steppedProximityMismatchSubscore))
+        # print("Activity ratio: " + str(activityRatio))
         return (math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
                * (proximityMismatchSubscore ** 6) / 4
 
@@ -172,7 +173,7 @@ class SpacerSequence:
             heuristic = heuristic - offTargetScore
         return heuristic
 
-    def getSpacerSequence(self):
+    def getGuideSequence(self):
         """Method that returns the string DNA guide sequence of the instance."""
         return self.__guideSequence
 
