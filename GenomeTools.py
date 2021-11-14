@@ -1,7 +1,22 @@
-def isValidFasta(sequencesFile):
-    """Takes in a string filename and returns whether the given variable is a valid fasta filename."""
-    return isinstance(sequencesFile, str) and ".fasta" in str.lower(sequencesFile) and \
-           str.lower(sequencesFile[-6:]) == ".fasta" and len(sequencesFile) > 6
+from os.path import exists
+
+
+def isValidFasta(FASTAFile):
+    """Takes in a string filename and returns whether the given path points to an existing FASTA file."""
+    return isinstance(FASTAFile, str) and ".fasta" in str.lower(FASTAFile) and \
+           str.lower(FASTAFile[-6:]) == ".fasta" and exists(FASTAFile)
+
+
+def isValidCSV(CSVFile):
+    """Takes in a string filename and returns whether the given path points to an existing CSV."""
+    return isinstance(CSVFile, str) and ".csv" in str.lower(CSVFile) and \
+           str.lower(CSVFile[-4:]) == ".csv" and exists(CSVFile)
+
+
+def isValidTSV(TSVFile):
+    """Takes in a string filename and returns whether the given path points to an existing TSV."""
+    return isinstance(TSVFile, str) and ".tsv" in str.lower(TSVFile) and \
+           str.lower(TSVFile[-4:]) == ".tsv" and exists(TSVFile)
 
 
 def isValidDNA(DNASequence):
@@ -26,16 +41,16 @@ def isValidRNA(RNASequence):
     return True
 
 
-def isValidGuideSequence(coreSequence):
+def isValidGuideSequence(guideSequence):
     """Method that returns whether a given sequence is a valid string representing a 35 base-pair RNA sequence in the
         format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream"""
-    if not isinstance(coreSequence, str):
+    if not isinstance(guideSequence, str):
         # print("Given sequence is not a valid string: " + coreSequence)
         return False
-    elif not isValidRNA(coreSequence):
+    elif not isValidRNA(guideSequence):
         # print("Given guide sequence is not valid RNA: " + coreSequence)
         return False
-    elif not (len(coreSequence) == 35 and coreSequence[27:29] == "CC"):
+    elif not (len(guideSequence) == 35 and guideSequence[27:29] == "CC"):
         # print("Given RNA sequence is not 35 bp with a PAM: " + coreSequence)
         return False
     else:
@@ -95,14 +110,38 @@ def completeGuideSequence(spacer, metaGenome):
                 return complementaryRNA(matchingSequences[0][guideIndex:(guideIndex + 35)])
 
 
+def findOffTargets(spacerSequence, substrateSequence, mismatchStrictness):
+    """Takes in a 20 bp RNA string spacerSequence and a substrateSequence, cross-correlates the DNA complement of the
+    spacer with the full substrate, finds each 35 bp subsequence that has a PAM (NGG) and a  correlation of at least
+    20 - mismatchStrictness, and returns a list of valid 35 bp target guide sequences."""
+    if not isValidRNA(spacerSequence):
+        # print("Given spacerSequence is not valid RNA: " + spacerSequence)
+        return None
+    else:
+        targetSequence = complementaryDNA(spacerSequence)
+        offTargets = []
+        crosscorrelation = crossCorrelateSequencesEfficiently(targetSequence, substrateSequence)
+        for shift in range(len(crosscorrelation)):
+            if crosscorrelation[shift] >= len(targetSequence) - mismatchStrictness:
+                # print("Off-target sequence: " + substrateSequence[shift + 6:(shift + 6 + 20 + 3)]
+                #       + " against " + targetSequence)
+                # print("with a correlation of " + str(crosscorrelation[shift]))
+                offTargets.append(substrateSequence[shift:(shift + 6 + 6 + 20 + 3)])
+        return offTargets
+
+
 def crossCorrelateSequences(targetSequence, substrateSequence):
-    """Takes in a DNA string targetSequence and a DNA string substrateSequence, cross-correlates keySequence along
-        substrateSequence, and returns the numerical results as a list of integers."""
+    """Takes in a 20 bp DNA string targetSequence and an arbitrary length DNA string substrateSequence, cross-correlates
+    targetSequence by shifting it along substrateSequence, and returns the results. Correlates the 20 bp ideal target
+    sequence with the 20 bp in the middle of every potential 35 bp target guide sequence on substrateSequence, and
+    returns the numerical correlation results as a list of integers, with each correlation result between 20 bp
+    targetSequence and substrate 35 bp subsequence being stored at the cross-correlation shift index of the list.
+    Records 0 for any 35 bp region without a PAM."""
     if not isValidDNA(targetSequence) or not isValidDNA(substrateSequence):
-        print("Given sequences are not valid DNA: " + targetSequence + " and " + substrateSequence)
+        # print("Given sequences are not valid DNA: " + targetSequence + " and " + substrateSequence)
         return []
     elif len(targetSequence) != 20:
-        print("Given targetSequence is not 20 nucleotides long.")
+        # print("Given targetSequence is not 20 nucleotides long.")
         return []
     else:
         crosscorrelation = []
@@ -114,26 +153,78 @@ def crossCorrelateSequences(targetSequence, substrateSequence):
         return crosscorrelation
 
 
-def correlateSequences(keySequence, substrateSubsequence):
-    """Takes in an arbitrary string keySequence and an arbitrary string substrate and calculates the correlation
-    between them, where equivalent characters add 1 and other characters add 0, then returns the correlation."""
-    correlation = 0
-    if not (isinstance(keySequence, str) and isinstance(substrateSubsequence, str)):
-        print("Given sequences to correlate are not strings.")
-    elif not len(keySequence) == len(substrateSubsequence):
-        print("Sequences to correlate are not same length: " + keySequence + " and " + substrateSubsequence)
+def crossCorrelateSequencesEfficiently(targetSequence, substrateSequence):
+    """Takes in a 20 bp DNA string targetSequence and an arbitrary length DNA string substrateSequence,
+    cross-correlates targetSequence by shifting it along substrateSequence, and returns the results. Correlates the
+    first PAMAdjacentLength bp in the 20 bp ideal target sequence (AKA the PAM-adjacent region) with the first
+    PAMAdjacentLength bp of the 20 bp in the middle of every potential 35 bp target guide  sequence on
+    substrateSequence, and if there is no more than PAMMismatchStrictness mismatches, returns the full numerical
+    correlation of both 20 bp regions (target sequence and potential target guide subsequence), storing the results
+    as a list of integers, with each correlation result between 20 bp targetSequence and substrate 35 bp subsequence
+    being stored at the cross-correlation shift index of the list. Records 0 for any 35 bp region without a PAM.
+    Records just the 10 bp PAM-adjacent correlation for any region with more than 1 PAM-adjacent mismatch. """
+    if not isValidDNA(targetSequence) or not isValidDNA(substrateSequence):
+        # print("Given sequences are not valid DNA: " + targetSequence + " and " + substrateSequence)
+        return []
+    elif len(targetSequence) != 20:
+        # print("Given targetSequence is not 20 nucleotides long.")
+        return []
     else:
-        for nucleotideIndex in range(len(keySequence)):
-            if keySequence[nucleotideIndex] == substrateSubsequence[nucleotideIndex]:
+        crosscorrelation = []
+        PAMAdjacentLength = 10
+        PAMMismatchStrictness = 1
+        for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
+            correlation = 0
+            if substrateSequence[(shift + 27):(shift + 29)] == "GG":
+                correlation = correlateSequences(targetSequence[0:PAMAdjacentLength],
+                                                 substrateSequence[(shift + 6):(shift + 6 + PAMAdjacentLength)])
+                if correlation >= PAMAdjacentLength - PAMMismatchStrictness:
+                    correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
+            crosscorrelation.append(correlation)
+        return crosscorrelation
+
+
+def correlateSequences(targetSequence, substrateSubsequence):
+    """Takes in any two DNA strings (targetSequence and substrateSubsequence) of the same length, validates the inputs,
+    and calculates the correlation between them, where equivalent characters add 1 and other characters add 0, then
+    returns the correlation of the two strings."""
+    correlation = 0
+    if not (isinstance(targetSequence, str) and isinstance(substrateSubsequence, str)):
+        # print("Given sequences to correlate are not strings.")
+        return correlation
+    elif not len(targetSequence) == len(substrateSubsequence):
+        # print("Sequences to correlate are not same length: " + targetSequence + " and " + substrateSubsequence)
+        return correlation
+    else:
+        for nucleotideIndex in range(len(targetSequence)):
+            if targetSequence[nucleotideIndex] == substrateSubsequence[nucleotideIndex]:
                 correlation = correlation + 1
-            elif substrateSubsequence[nucleotideIndex] == "N" or keySequence[nucleotideIndex] == "N":
+            elif substrateSubsequence[nucleotideIndex] == "N" or targetSequence[nucleotideIndex] == "N":
                 correlation = correlation + 1
     return correlation
 
 
-def saveToFile(data, saveFilePath):
+def saveToTXT(data, saveFilePath):
     """Takes in arbitrary data and a save file name (WITHOUT the file type extension), writes the data to a .txt file at
     the given saveFilePath, and returns the path of the saved .txt file."""
     saveFile = open(saveFilePath + ".txt", "w+")
     saveFile.write(data)
+    return saveFilePath + ".txt"
+
+
+def saveNestedListToCSV(nestedList, saveFilePath):
+    """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the
+    nested list data to a .CSV file at the given saveFilePath (overwriting the contents if the file already exists),
+    and returns the path of the saved .CSV file."""
+    saveFile = open(saveFilePath, "w+")
+    saveFile.write(nestedList)
+    return saveFilePath + ".txt"
+
+
+def saveNestedListToTSV(nestedList, saveFilePath):
+    """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the
+    nested list data to a .TSV file at the given saveFilePath (overwriting the contents if the file already exists),
+    and returns the path of the saved .TSV file."""
+    saveFile = open(saveFilePath, "w+")
+    saveFile.write(nestedList)
     return saveFilePath + ".txt"

@@ -40,8 +40,5 @@ class SpacerSequenceTests(unittest.TestCase):
         print(newSpacer.getOffTargetScores())
 
 
-
-
-
 if __name__ == '__main__':
     unittest.main()

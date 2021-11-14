@@ -81,7 +81,7 @@ class SpacerSequence:
             self.__offTargetScores = []
             self.__heuristic = self.__calcHeuristic()
         elif not isinstance(genome, MetaGenome):
-            print("Given genome is not a valid MetaGenome object.")
+            # print("Given genome is not a valid MetaGenome object.")
             self.__guideSequence = guideSequence
             self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
             self.__offTargetSequences = []
