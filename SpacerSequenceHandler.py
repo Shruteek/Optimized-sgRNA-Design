@@ -298,16 +298,18 @@ if __name__ == '__main__':
                         if isValidCSV(sys.argv[4]):
                             saveFile.close()
                             saveNestedListToCSV(data, sys.argv[4])
+                            print(data)
                             print("Successfully saved to " + sys.argv[4])
                         elif isValidTSV(sys.argv[4]):
                             saveFile.close()
                             saveNestedListToTSV(data, sys.argv[4])
+                            print(data)
                             print("Successfully saved to " + sys.argv[4])
                         else:
                             saveFile.close()
                             os.remove(sys.argv[4])
-                            print("[Error] Could not save data. Invalid TSV or CSV file path: " + sys.argv[4])
                             print(data)
+                            print("[Error] Could not save data. Invalid TSV or CSV file path: " + sys.argv[4])
                     else:
                         print(data)
             elif sys.argv[1] == "MSI":
@@ -334,16 +336,18 @@ if __name__ == '__main__':
                         if isValidCSV(sys.argv[4]):
                             saveFile.close()
                             saveNestedListToCSV(data, sys.argv[4])
+                            print(data)
                             print("Successfully saved to " + sys.argv[4])
                         elif isValidTSV(sys.argv[4]):
                             saveFile.close()
                             saveNestedListToTSV(data, sys.argv[4])
+                            print(data)
                             print("Successfully saved to " + sys.argv[4])
                         else:
                             saveFile.close()
                             os.remove(sys.argv[4])
-                            print("[Error] Could not save data. Invalid TSV or CSV file path: " + sys.argv[4])
                             print(data)
+                            print("[Error] Could not save data. Invalid TSV or CSV file path: " + sys.argv[4])
                     else:
                         print(data)
         else:

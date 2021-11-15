@@ -51,7 +51,7 @@ class Sequence:
 
     def hasSubsequence(self, subsequence):
         """Method that returns whether or not the given string subsequence occurs in the stored Sequence."""
-        return self.__Record.seq.find(subsequence) == -1
+        return not self.__Record.seq.find(subsequence) == -1
 
     def findOffTargets(self, spacerSequence):
         """Takes in a 20 bp RNA string spacerSequence and returns all off-target sequences found using the GenomeTools

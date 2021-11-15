@@ -53,6 +53,7 @@ def isValidGuideSequence(guideSequence):
         # print("Given guide sequence is not valid RNA: " + coreSequence)
         return False
     elif not (len(guideSequence) == 35 and guideSequence[27:29] == "CC"):
+        print("PAM is " + guideSequence[26:29])
         # print("Given RNA sequence is not 35 bp with a PAM: " + coreSequence)
         return False
     else:
@@ -95,10 +96,10 @@ def completeGuideSequence(spacer, metaGenome):
     """Takes in a 20-bp RNA spacer sequence and a metaGenome and returns the full RNA guide sequence according to the
     metaGenome, if the complement of the spacer exists in the metagenome and is within usable bounds."""
     if not isValidRNA(spacer):
-        # print("Spacer is not a string.")
+        print("Spacer is not a string.")
         return spacer
     elif not len(spacer) == 20:
-        # print("Spacer is not 20 base pairs.")
+        print("Spacer is not 20 base pairs.")
         return spacer
     else:
         target = complementaryDNA(spacer)
@@ -110,7 +111,7 @@ def completeGuideSequence(spacer, metaGenome):
             for subsequenceIndex in matchingSubsequenceIndices[sequenceIndex]:
                 if 6 < subsequenceIndex < len(matchingSequences[sequenceIndex]) - 6 and \
                         matchingSequences[sequenceIndex][subsequenceIndex:(subsequenceIndex+20)] == target and \
-                        matchingSequences[sequenceIndex][(subsequenceIndex+20+1):(subsequenceIndex+20+1+2)] == "GG":
+                        matchingSequences[sequenceIndex][(subsequenceIndex+21):(subsequenceIndex+20+3)] == "GG":
                     return complementaryRNA(matchingSequences[sequenceIndex][(subsequenceIndex-6):(subsequenceIndex+29)])
         return spacer
 

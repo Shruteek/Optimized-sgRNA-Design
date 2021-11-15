@@ -77,25 +77,27 @@ class SpacerSequence:
         guideSequence using the genome otherwise. """
         if not isinstance(genome, MetaGenome):
             # print("Given genome is not a valid MetaGenome object.")
-            self.__guideSequence = completeGuideSequence(guideSequence, genome)
-            self.__onTargetScore = 0
-            self.__offTargetSequences = []
-            self.__offTargetScores = []
-        elif not isValidGuideSequence(completeGuideSequence(guideSequence, genome)):
             self.__guideSequence = "ACUGACUGACUGACUGACUGACUGACUGACUGACU"
             self.__onTargetScore = 0
             self.__offTargetSequences = []
             self.__offTargetScores = []
-            self.__heuristic = self.__calcHeuristic()
         else:
-            self.__guideSequence = completeGuideSequence(guideSequence, genome)
-            self.__offTargetSequences = genome.findOffTargets(self.__guideSequence[6:26])
-            self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
-            self.__offTargetScores = []
-            for offTargetSequenceList in self.__offTargetSequences:
-                for offTargetCandidate in offTargetSequenceList:
-                    self.__offTargetScores.append(self.__calcOffTargetScore(offTargetCandidate))
-            self.__heuristic = self.__calcHeuristic()
+            potentialGuideSequence = completeGuideSequence(guideSequence, genome)
+            if not isValidGuideSequence(potentialGuideSequence):
+                self.__guideSequence = "ACUGACUGACUGACUGACUGACUGACUGACUGACU"
+                self.__onTargetScore = 0
+                self.__offTargetSequences = []
+                self.__offTargetScores = []
+                self.__heuristic = self.__calcHeuristic()
+            else:
+                self.__guideSequence = potentialGuideSequence
+                self.__offTargetSequences = genome.findOffTargets(self.__guideSequence[6:26])
+                self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
+                self.__offTargetScores = []
+                for offTargetSequenceList in self.__offTargetSequences:
+                    for offTargetCandidate in offTargetSequenceList:
+                        self.__offTargetScores.append(self.__calcOffTargetScore(offTargetCandidate))
+                self.__heuristic = self.__calcHeuristic()
 
     def __calcOnTargetScore(self, targetSequence):
         """Method that takes in a 35 bp guide DNA sequence and returns the calculated on-target score of it, assuming a

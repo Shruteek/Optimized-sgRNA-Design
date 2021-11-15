@@ -9,11 +9,10 @@ class MetaGenome:
         """Initialization method that takes in the local .FASTA filename of a metaGenome (and, optionally, a name for that
             metagenome) and instantiates."""
         self.__Name = name
+        self.__Sequences = []
         if not isValidFasta(metaGenomePath):
-            # print("The given metaGenome file is not a valid .fasta string file name:" + metaGenomePath)
-            self.__Sequences = []
+            print("The given metaGenome file is not a valid .fasta string file name:" + metaGenomePath)
         else:
-            self.__Sequences = []
             self.addSequences(metaGenomePath)
 
     def getName(self):
@@ -34,18 +33,15 @@ class MetaGenome:
             given string key sequence in __Sequences, ensuring the validity of the key input as either an index or a string
             sequence."""
         if isinstance(key, str):
-            if not isValidDNA(key) and not isValidRNA(key):
+            if not (isValidDNA(key) or isValidRNA(key)):
                 # print("Subsequence entered is neither valid RNA nor valid DNA.")
                 return []
             else:
                 matchingSequences = []
                 for sequence in self.__Sequences:
-                    if not sequence.hasSubsequence(key):
+                    if sequence.hasSubsequence(key):
                         matchingSequences.append(sequence.getSequence())
-                    if len(matchingSequences) == 0:
-                        return matchingSequences
-                    else:
-                        return matchingSequences
+                return matchingSequences
         elif isinstance(key, int):
             if key < 0 or key >= len(self.__Sequences):
                 # print("Invalid given index of " + key + "for __Sequences size of " + len(self.__Sequences))
