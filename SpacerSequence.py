@@ -71,23 +71,24 @@ class SpacerSequence:
                              [5, 5, -1, -1, -1, -1, -1]]
 
     def __init__(self, guideSequence, genome):
-        """Initialization method that takes in an RNA guide sequence and an associated metaGenome class file and
-        instantiates, checking to ensure the guideSequence is in the format 6 bp upstream, 20 bp spacer sequence,
-        3 bp PAM, 6 bp downstream, as well as that genome is a MetaGenome."""
-        if not isValidGuideSequence(guideSequence):
-            self.__guideSequence = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        """Initialization method that takes in a 35 bp RNA guide sequence and an associated metaGenome class file and
+        instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
+        sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
+        guideSequence using the genome otherwise. """
+        if not isinstance(genome, MetaGenome):
+            # print("Given genome is not a valid MetaGenome object.")
+            self.__guideSequence = completeGuideSequence(guideSequence, genome)
+            self.__onTargetScore = 0
+            self.__offTargetSequences = []
+            self.__offTargetScores = []
+        elif not isValidGuideSequence(completeGuideSequence(guideSequence, genome)):
+            self.__guideSequence = "ACUGACUGACUGACUGACUGACUGACUGACUGACU"
             self.__onTargetScore = 0
             self.__offTargetSequences = []
             self.__offTargetScores = []
             self.__heuristic = self.__calcHeuristic()
-        elif not isinstance(genome, MetaGenome):
-            # print("Given genome is not a valid MetaGenome object.")
-            self.__guideSequence = guideSequence
-            self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
-            self.__offTargetSequences = []
-            self.__offTargetScores = []
         else:
-            self.__guideSequence = guideSequence
+            self.__guideSequence = completeGuideSequence(guideSequence, genome)
             self.__offTargetSequences = genome.findOffTargets(self.__guideSequence[6:26])
             self.__onTargetScore = self.__calcOnTargetScore(complementaryDNA(self.__guideSequence))
             self.__offTargetScores = []

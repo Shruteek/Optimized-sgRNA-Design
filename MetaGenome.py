@@ -69,7 +69,7 @@ class MetaGenome:
             else:
                 nestedOffTargets.append(sequence.findOffTargets(spacerSequence))
         for offTargetsInSequence in nestedOffTargets:
-            for offTargetIndex in len(offTargetsInSequence):
+            for offTargetIndex in range(len(offTargetsInSequence)):
                 if correlateSequences(complementaryDNA(spacerSequence), offTargetsInSequence[offTargetIndex][6:26]) == 20:
                     offTargetsInSequence.pop(offTargetIndex)
         return nestedOffTargets

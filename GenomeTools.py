@@ -1,3 +1,5 @@
+import csv
+import re
 from os.path import exists
 
 
@@ -24,8 +26,8 @@ def isValidDNA(DNASequence):
     if not isinstance(DNASequence, str):
         return False
     validDNABasePairs = "ACTGN"
-    for nucleotide in DNASequence:
-        if not validDNABasePairs.__contains__(nucleotide):
+    for nucleotideIndex in range(len(DNASequence)):
+        if not validDNABasePairs.__contains__(DNASequence[nucleotideIndex]):
             return False
     return True
 
@@ -90,24 +92,27 @@ def complementaryDNA(sequence):
 
 
 def completeGuideSequence(spacer, metaGenome):
-    """Takes in a 20-bp spacer sequence and a metaGenome and returns the full RNA guide sequence according to the
+    """Takes in a 20-bp RNA spacer sequence and a metaGenome and returns the full RNA guide sequence according to the
     metaGenome, if the complement of the spacer exists in the metagenome and is within usable bounds."""
-    if not isinstance(spacer, str):
+    if not isValidRNA(spacer):
         # print("Spacer is not a string.")
         return spacer
     elif not len(spacer) == 20:
         # print("Spacer is not 20 base pairs.")
         return spacer
     else:
-        matchingSequences = metaGenome.getSequence(complementaryDNA(spacer))
-        if len(matchingSequences) == 0:
-            return spacer
-        else:
-            guideIndex = matchingSequences[0].find(complementaryDNA(spacer)) - 6
-            if guideIndex < 0 or guideIndex > len(matchingSequences[0]) - 35:
-                return spacer
-            else:
-                return complementaryRNA(matchingSequences[0][guideIndex:(guideIndex + 35)])
+        target = complementaryDNA(spacer)
+        matchingSequences = metaGenome.getSequence(target)
+        matchingSubsequenceIndices = []
+        for sequence in matchingSequences:
+            matchingSubsequenceIndices.append([m.start() for m in re.finditer(target, sequence)])
+        for sequenceIndex in range(len(matchingSequences)):
+            for subsequenceIndex in matchingSubsequenceIndices[sequenceIndex]:
+                if 6 < subsequenceIndex < len(matchingSequences[sequenceIndex]) - 6 and \
+                        matchingSequences[sequenceIndex][subsequenceIndex:(subsequenceIndex+20)] == target and \
+                        matchingSequences[sequenceIndex][(subsequenceIndex+20+1):(subsequenceIndex+20+1+2)] == "GG":
+                    return complementaryRNA(matchingSequences[sequenceIndex][(subsequenceIndex-6):(subsequenceIndex+29)])
+        return spacer
 
 
 def findOffTargets(spacerSequence, substrateSequence, mismatchStrictness):
@@ -163,11 +168,11 @@ def crossCorrelateSequencesEfficiently(targetSequence, substrateSequence):
     as a list of integers, with each correlation result between 20 bp targetSequence and substrate 35 bp subsequence
     being stored at the cross-correlation shift index of the list. Records 0 for any 35 bp region without a PAM.
     Records just the 10 bp PAM-adjacent correlation for any region with more than 1 PAM-adjacent mismatch. """
-    if not isValidDNA(targetSequence) or not isValidDNA(substrateSequence):
-        # print("Given sequences are not valid DNA: " + targetSequence + " and " + substrateSequence)
+    if not isValidDNA(targetSequence):
+        return []
+    elif not isValidDNA(substrateSequence):
         return []
     elif len(targetSequence) != 20:
-        # print("Given targetSequence is not 20 nucleotides long.")
         return []
     else:
         crosscorrelation = []
@@ -216,15 +221,21 @@ def saveNestedListToCSV(nestedList, saveFilePath):
     """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the
     nested list data to a .CSV file at the given saveFilePath (overwriting the contents if the file already exists),
     and returns the path of the saved .CSV file."""
-    saveFile = open(saveFilePath, "w+")
-    saveFile.write(nestedList)
-    return saveFilePath + ".txt"
+    CSVFile = open(saveFilePath, "w", newline="")
+    CSVlinewriter = csv.writer(CSVFile, delimiter=",")
+    for sublist in nestedList:
+        CSVlinewriter.writerow(sublist)
+    CSVFile.close()
+    return saveFilePath
 
 
 def saveNestedListToTSV(nestedList, saveFilePath):
     """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the
     nested list data to a .TSV file at the given saveFilePath (overwriting the contents if the file already exists),
     and returns the path of the saved .TSV file."""
-    saveFile = open(saveFilePath, "w+")
-    saveFile.write(nestedList)
-    return saveFilePath + ".txt"
+    TSVFile = open(saveFilePath, "w", newline="")
+    TSVlinewriter = csv.writer(TSVFile, delimiter=" ")
+    for sublist in nestedList:
+        TSVlinewriter.writerow(sublist)
+    TSVFile.close()
+    return saveFilePath
