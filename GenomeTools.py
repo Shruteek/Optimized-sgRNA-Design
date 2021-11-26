@@ -5,20 +5,17 @@ from os.path import exists
 
 def isValidFasta(FASTAFile):
     """Takes in a string filename and returns whether the given path points to an existing FASTA file."""
-    return isinstance(FASTAFile, str) and ".fasta" in str.lower(FASTAFile) and \
-           str.lower(FASTAFile[-6:]) == ".fasta" and exists(FASTAFile)
+    return isinstance(FASTAFile, str) and exists(FASTAFile)
 
 
 def isValidCSV(CSVFile):
     """Takes in a string filename and returns whether the given path points to an existing CSV."""
-    return isinstance(CSVFile, str) and ".csv" in str.lower(CSVFile) and \
-           str.lower(CSVFile[-4:]) == ".csv" and exists(CSVFile)
+    return isinstance(CSVFile, str) and len(CSVFile) > 4 and str.lower(CSVFile[-4:]) == ".csv" and exists(CSVFile)
 
 
 def isValidTSV(TSVFile):
     """Takes in a string filename and returns whether the given path points to an existing TSV."""
-    return isinstance(TSVFile, str) and ".tsv" in str.lower(TSVFile) and \
-           str.lower(TSVFile[-4:]) == ".tsv" and exists(TSVFile)
+    return isinstance(TSVFile, str) and len(TSVFile) > 4 and str.lower(TSVFile[-4:]) == ".tsv" and exists(TSVFile)
 
 
 def isValidDNA(DNASequence):
@@ -53,7 +50,6 @@ def isValidGuideSequence(guideSequence):
         # print("Given guide sequence is not valid RNA: " + coreSequence)
         return False
     elif not (len(guideSequence) == 35 and guideSequence[27:29] == "CC"):
-        print("PAM is " + guideSequence[26:29])
         # print("Given RNA sequence is not 35 bp with a PAM: " + coreSequence)
         return False
     else:
@@ -61,13 +57,17 @@ def isValidGuideSequence(guideSequence):
 
 
 def complementaryRNA(sequence):
-    """Method that returns the complementary RNA strand sequence to the given input DNA sequence."""
+    """Method that returns the complementary RNA strand sequence to the given input RNA or DNA sequence."""
     complement = ""
+    if not (isValidRNA(sequence) or isValidDNA(sequence)):
+        return ""
     for nucleotide in str.upper(sequence):
         if nucleotide == "A":
             complement = complement + "U"
         elif nucleotide == "C":
             complement = complement + "G"
+        elif nucleotide == "U":
+            complement = complement + "A"
         elif nucleotide == "T":
             complement = complement + "A"
         elif nucleotide == "G":
@@ -116,13 +116,13 @@ def completeGuideSequence(spacer, metaGenome):
         return spacer
 
 
-def findOffTargets(spacerSequence, substrateSequence, mismatchStrictness):
+def findTargetsFromSpacer(spacerSequence, substrateSequence, mismatchStrictness):
     """Takes in a 20 bp RNA string spacerSequence and a substrateSequence, cross-correlates the DNA complement of the
     spacer with the full substrate, finds each 35 bp subsequence that has a PAM (NGG) and a  correlation of at least
     20 - mismatchStrictness, and returns a list of valid 35 bp target guide sequences."""
-    if not isValidRNA(spacerSequence):
-        # print("Given spacerSequence is not valid RNA: " + spacerSequence)
-        return None
+    if not (isValidRNA(spacerSequence) and len(spacerSequence) == 20):
+        # print("Given sequence is not a valid spacer sequence: " + spacerSequence)
+        return []
     else:
         targetSequence = complementaryDNA(spacerSequence)
         offTargets = []
@@ -218,11 +218,11 @@ def saveToTXT(data, saveFilePath):
     return saveFilePath + ".txt"
 
 
-def saveNestedListToCSV(nestedList, saveFilePath):
+def writeNestedListToCSVRows(nestedList, saveFilePath):
     """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the
-    nested list data to a .CSV file at the given saveFilePath (overwriting the contents if the file already exists),
+    nested list data to a .CSV file at the given saveFilePath (after the contents if the file already exists),
     and returns the path of the saved .CSV file."""
-    CSVFile = open(saveFilePath, "w", newline="")
+    CSVFile = open(saveFilePath, "a", newline="")
     CSVlinewriter = csv.writer(CSVFile, delimiter=",")
     for sublist in nestedList:
         CSVlinewriter.writerow(sublist)
@@ -230,13 +230,35 @@ def saveNestedListToCSV(nestedList, saveFilePath):
     return saveFilePath
 
 
-def saveNestedListToTSV(nestedList, saveFilePath):
-    """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the
-    nested list data to a .TSV file at the given saveFilePath (overwriting the contents if the file already exists),
+def writeNestedListToTSVRows(nestedList, saveFilePath):
+    """Takes in a nested list containing data and a .TSV save file name (WITH the file type extension), writes the
+    nested list data to a .TSV file at the given saveFilePath (after the contents if the file already exists),
     and returns the path of the saved .TSV file."""
-    TSVFile = open(saveFilePath, "w", newline="")
+    TSVFile = open(saveFilePath, "a+", newline="")
     TSVlinewriter = csv.writer(TSVFile, delimiter=" ")
     for sublist in nestedList:
         TSVlinewriter.writerow(sublist)
+    TSVFile.close()
+    return saveFilePath
+
+
+def writeListToCSVRow(contentsList, saveFilePath):
+    """Takes in a list containing data and a .CSV save file name (WITH the file type extension), appends each element
+        of the list to a cell in a new row of a .CSV file at the given saveFilePath (keeping the contents if the file
+        already exists), and returns the path of the saved .CSV file."""
+    TSVFile = open(saveFilePath, "a+", newline="")
+    TSVlinewriter = csv.writer(TSVFile, delimiter=",")
+    TSVlinewriter.writerow(contentsList)
+    TSVFile.close()
+    return saveFilePath
+
+
+def writeListToTSVRow(contentsList, saveFilePath):
+    """Takes in a list containing data and a .TSV save file name (WITH the file type extension), appends each element
+        of the list to a cell in a new row of a .TSV file at the given saveFilePath (keeping the contents if the file
+        already exists), and returns the path of the saved .TSV file."""
+    TSVFile = open(saveFilePath, "a", newline="")
+    TSVlinewriter = csv.writer(TSVFile, delimiter=" ")
+    TSVlinewriter.writerow(contentsList)
     TSVFile.close()
     return saveFilePath

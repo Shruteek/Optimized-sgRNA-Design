@@ -52,22 +52,17 @@ class MetaGenome:
             # print("Invalid sequence key: must be int (index) or str (subsequence).")
             return []
 
-    def findOffTargets(self, spacerSequence):
-        """Method that takes an input String RNA spacerSequence and uses the findOffTargets method of each Sequence in
-            __Sequences, compiles them, and returns."""
+    def findTargetsFromSpacer(self, spacerSequence):
+        """Method that takes an input String RNA spacerSequence and uses the findTargetsFromSpacer method of each
+        Sequence in __Sequences, compiles them, and returns."""
         nestedOffTargets = []
         if not len(spacerSequence) == 20:
             # print("Warning: given spacerSequence is not 20 nucleotides long: " + spacerSequence)
             nestedOffTargets = []
         for sequence in self.__Sequences:
-            if not nestedOffTargets:
-                nestedOffTargets = [sequence.findOffTargets(spacerSequence)]
-            else:
-                nestedOffTargets.append(sequence.findOffTargets(spacerSequence))
-        for offTargetsInSequence in nestedOffTargets:
-            for offTargetIndex in range(len(offTargetsInSequence)):
-                if correlateSequences(complementaryDNA(spacerSequence), offTargetsInSequence[offTargetIndex][6:26]) == 20:
-                    offTargetsInSequence.pop(offTargetIndex)
+            offTargets = sequence.findTargetsFromSpacer(spacerSequence)
+            for offTarget in offTargets:
+                nestedOffTargets.append(offTarget)
         return nestedOffTargets
 
     def addSequences(self, sequencesFile):

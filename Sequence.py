@@ -53,8 +53,8 @@ class Sequence:
         """Method that returns whether or not the given string subsequence occurs in the stored Sequence."""
         return not self.__Record.seq.find(subsequence) == -1
 
-    def findOffTargets(self, spacerSequence):
+    def findTargetsFromSpacer(self, spacerSequence):
         """Takes in a 20 bp RNA string spacerSequence and returns all off-target sequences found using the GenomeTools
-         class' findOffTargets method."""
-        return findOffTargets(spacerSequence, str(self.__Record.seq), self.__MismatchStrictness)
+         class' findMatchingSequences method."""
+        return findTargetsFromSpacer(spacerSequence, str(self.__Record.seq), self.__MismatchStrictness)
 
