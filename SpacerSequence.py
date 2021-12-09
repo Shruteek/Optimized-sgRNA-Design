@@ -154,11 +154,11 @@ class SpacerSequence:
         steppedProximityMismatchSubscore = 1
         offTargetSpacerSequence = offTargetSequence[6:26]
         for c in range(len(offTargetSpacerSequence)):
-            if offTargetSpacerSequence[c] != guideSequence[c + 6]:
+            if offTargetSpacerSequence[c] != complementaryDNA(guideSequence[c + 6]):
                 proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
                 if c > 0:
                     indexDict = self.MismatchToHsuIndexDict[
-                        complementaryDNA(guideSequence[c + 6]) + '->' + offTargetSpacerSequence[c]]
+                        complementaryDNA(complementaryDNA(guideSequence[c + 6])) + '->' + offTargetSpacerSequence[c]]
                     HsuMismatchSubscore = HsuMismatchSubscore * self.HsuMatrix[indexDict][c - 1]
                 if 20 - c <= 6:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.1
@@ -168,7 +168,7 @@ class SpacerSequence:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.0125
         proximityMismatchSubscore = (3.5477 - proximityMismatchSubscore) / 3.5477
         activityRatio = self.calcOnTargetScore(offTargetSequence) / self.calcOnTargetScore(complementaryDNA(guideSequence))
-        return (math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
+        return 200*(math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
                * (proximityMismatchSubscore ** 6) / 4
 
     def __calcHeuristics(self):

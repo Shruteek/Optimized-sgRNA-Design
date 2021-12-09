@@ -38,12 +38,13 @@ def __queryForDelimitedGuideFile():
         return filePathInput
 
 
-def __queryForGuideSequence(metaGenome):
+def __queryForGuideSequence():
     """Repeatedly queries the user for a string guide sequence, validates each sequence input, takes the first valid
     sequence, and returns it."""
     guideSequence = ""
     timesQueried = 0
-    while not (isValidRNA(guideSequence) and (len(guideSequence) == 20 or len(guideSequence) == 35)) and timesQueried < 5:
+    while not (
+            isValidRNA(guideSequence) and (len(guideSequence) == 20 or len(guideSequence) == 35)) and timesQueried < 5:
         if not timesQueried == 0:
             print("Invalid guide sequence or spacer sequence entered. Please try again.")
         guideSequence = input("Enter a 20 bp spacer sequence: ")
@@ -160,75 +161,101 @@ def __queryForSaveFile():
 def __printHelpMessage(helpArgument):
     """Simply prints out one of the help messages explaining program details, returning nothing."""
     if helpArgument == "no-input":
-        print("No input (e.g. `python SpacerSequenceHandler.py`):\n"
-              "In no input mode, the program can take a 20 nucleotide character string representing the 20 base pair "
-              "sgRNA spacer sequence and a metagenome .FASTA file and return the target analysis list of the sgRNA. It "
-              "can also take a delimiter-type file (e.g. CSV or TSV) of sgRNA spacers and a metagenome .FASTA file and "
-              "return a list of target analysis lists, one for each valid sgRNA. These inputs are repeatedly queried "
-              "for command line text input until 5 invalid inputs are given for a prompt, or until all valid inputs "
-              "have been given.")
+        print("""No input (e.g. `python SpacerSequenceHandler.py`):\nIn no input mode, the program can take a 20 
+        nucleotide character string representing the 20 base pair sgRNA spacer sequence and a metagenome .FASTA file 
+        and return the target analysis list of the sgRNA. It can also take a delimiter-type file (e.g. CSV or TSV) of 
+        sgRNA spacers and a metagenome .FASTA file and return a list of target analysis lists, one for each valid 
+        sgRNA. These inputs are repeatedly queried for command line text input until 5 invalid inputs are given for a 
+        prompt, or until all valid inputs have been given.\nNOTICE: The no-input mode is deprecated and its entire 
+        functionality can be executed through single command line commands.""")
     elif helpArgument == "single-spacer-input" or helpArgument == "SSI":
-        print("Single spacer input (e.g `python SpacerSequenceHandler.PY SSI ACUGACUGACUGACUGACUG metaGenome.FASTA "
-              "saveFile.CSV`):\n"
-              "In single spacer input mode, the program can take a 20 nucleotide character string representing the "
-              "20 base pair sgRNA spacer sequence (though currently, no generic 'N' functionality), a .FASTA file path "
-              "representing the metaGenome with which the spacer sequence is to be analyzed, and (optionally) a .CSV "
-              "or .TSV file path representing the file to which the target analysis data should be written (**if the "
-              "save file already exists, its contents will be overwritten**). The target analysis data will take the "
-              "form:\n"
-              "[35 bp RNA guide sequence (6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream); "
-              "on-target score; list of off-target scores; RNA guide sequence heuristic]")
+        print("""Single spacer input (e.g `python SpacerSequenceHandler.PY SSI ACUGACUGACUGACUGACUG metaGenome.FASTA 
+        saveFile.CSV`):\nIn single spacer input mode, the program can take a nucleotide RNA or DNA character string 
+        representing the 20 base pair sgRNA spacer sequence; this string can be 20 base pairs (just the spacer), 
+        23 base pairs (the spacer + PAM complement), or 35 base pairs (the guide sequence containing the spacer), 
+        and in RNA or DNA format (though currently, no generic 'N' functionality). The program also takes a .FASTA 
+        file path representing the metaGenome with which the spacer sequence is to be analyzed, and (optionally) a 
+        .CSV or .TSV file path representing the file to which the target analysis data should be written (**if the 
+        save file already exists, its contents will not be appended to**). The target analysis data will take the 
+        form:\n[ Spacer (20 bp RNA), Target Guide Sequence (35 bp DNA), Off-Target Sequences (35 bp DNA), On-Target Score, 
+        Off-Target Scores, Heuristic]""")
+    elif helpArgument == "single-target-input" or helpArgument == "STI":
+        print("""Single target input (e.g `python SpacerSequenceHandler.PY STI TGACTGACTGACTGACTGAC metaGenome.FASTA 
+        saveFile.CSV`):\nIn single target input mode, the program can take a nucleotide DNA character string 
+        representing the 20 base pair sgRNA spacer sequence; this string can be 20 base pairs (just the target), 
+        23 base pairs (the target + PAM), or 35 base pairs (the guide target sequence containing the target), 
+        only in DNA format (though currently, no generic 'N' functionality). The program also takes a .FASTA file 
+        path representing the metaGenome with which the target's spacer sequence is to be analyzed, and (optionally) 
+        a .CSV or .TSV file path representing the file to which the target analysis data should be written (**if the 
+        save file already exists, its contents will not be appended to**). The target analysis data will take the 
+        form:\n[ Spacer (20 bp RNA), Target Guide Sequence (35 bp DNA), Off-Target Sequences (35 bp DNA), On-Target Score, 
+        Off-Target Scores, Heuristic]""")
     elif helpArgument == "multi-spacer-input" or helpArgument == "MSI":
-        print("Multi spacer input (e.g `python SpacerSequenceHandler.PY MSI spacerSequences.CSV metaGenome.FASTA "
-              "saveFile.CSV`):\n"
-              "In multi spacer input mode, the program can take a .TSV or .CSV file path representing"
-              "nucleotide characters (though currently, no functionality for the 'N' character), a .FASTA file path "
-              "representing the metaGenome with which the spacer sequences are to be analyzed, and (optionally) a .CSV "
-              "or .TSV file path representing the file to which the target analysis data should be written (**if the "
-              "save file already exists, its contents will be overwritten**). Each target analysis row will take the "
-              "form:\n"
-              "[35 bp RNA guide sequence (6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream); "
-              "on-target score; list of off-target scores; RNA guide sequence heuristic]")
+        print("""Multi spacer input (e.g `python SpacerSequenceHandler.PY MSI spacerSequences.CSV metaGenome.FASTA 
+        saveFile.CSV`):\nIn multi spacer input mode, the program can take a .TSV or .CSV file path representing the 
+        file from which the sgRNA string sequences will be read; these strings can be 20 base pairs (just the 
+        spacers), 23 base pairs (the spacers + NGG PAM complements), or 35 base pairs (the guide sequences containing 
+        the spacers), and in RNA or DNA format (though currently, no generic 'N' functionality). The program also 
+        takes in a .FASTA file path representing the metaGenome with which the spacer sequences are to be analyzed, 
+        and (optionally) a .CSV or .TSV file path representing the file to which the target analysis data should be 
+        written (**if the save file already exists, its contents will not be appended to**). Each target analysis row 
+        will take the form:\n[Spacer (20 bp RNA), Target Guide Sequence (35 bp DNA), Off-Target Sequences (35 bp DNA), 
+        On-Target Score, Off-Target Scores, Heuristic]""")
+    elif helpArgument == "multi-target-input" or helpArgument == "MTI":
+        print("""Multi target input (e.g `python SpacerSequenceHandler.PY MTI targetSequences.CSV metaGenome.FASTA 
+        saveFile.CSV`):\nIn multi target input mode, the program can take a .TSV or .CSV file path representing the 
+        file from which the DNA string target sequences will be read; these strings can be 20 base pairs (just the 
+        targets), 23 base pairs (the targets + NGG PAMs), or 35 base pairs (the target guide sequences containing the 
+        target), and in RNA or DNA format (though currently, no generic 'N' functionality). The program also takes in 
+        a .FASTA file path representing the metaGenome with which the target sequences are to be found and analyzed, 
+        and (optionally) a .CSV or .TSV file path representing the file to which the target analysis data should be 
+        written (**if the save file already exists, its contents will not be appended to**). Each target analysis row 
+        will take the form:\n[Spacer (20 bp RNA), Target Guide Sequence (35 bp DNA), Off-Target Sequences (35 bp DNA), 
+        On-Target Score, Off-Target Scores, Heuristic]""")
     else:
         if not helpArgument == "":
             print("[Error] Invalid help argument Entered. See generic help message below.")
-        print("This program can be run with any of the below input schemes.\n"
-              "No input (e.g. `python SpacerSequenceHandler.PY`): The program will repeatedly prompt for inputs until "
-              "it receives all necessary information or too many failed inputs.\n\n"
-              "Single spacer input (e.g `python SpacerSequenceHandler.PY SSI ACUGACUGACUGACUGACUG metaGenome.FASTA "
-              "saveFile.CSV`): The program takes in a 20 bp sgRNA spacer and a .FASTA file path and saves the target "
-              "analysis data to the saveFile path.\n\n"
-              "Multi spacer input (e.g `python SpacerSequenceHandler.PY MSI spacerSequences.CSV metaGenome.FASTA "
-              "saveFile.CSV`): The program takes in a .CSV or .TSV file path and a .FASTA file path and saves a list "
-              "of target analysis data to the saveFile path.\n\n"
-              "Help (e.g. `python SpacerSequenceHandler.py help`): Print this message. For more detailed help on "
-              "specific modes, use one of the following commands:\n"
-              "`python SpacerSequenceHandler.py help no-input`\n"
-              "`python SpacerSequenceHandler.py help single-spacer-input`\n"
-              "`python SpacerSequenceHandler.py help multi-spacer-input`")
+        print("""This program can be run with any of the below input schemes:\n\nNo input (e.g. `python 
+        SpacerSequenceHandler.PY`): The program will repeatedly prompt for inputs until it receives all necessary 
+        information or too many failed inputs.\n\nSingle spacer input (e.g `python SpacerSequenceHandler.PY SSI 
+        ACUGACUGACUGACUGACUG metaGenome.FASTA saveFile.CSV`): The program takes in a string representing an sgRNA 
+        spacer and a .FASTA file path and saves the target analysis data to the saveFile path.\n\nSingle target input 
+        (e.g `python SpacerSequenceHandler.PY STI TGACTGACTGACTGACTGAC metaGenome.FASTA saveFile.CSV`): The program 
+        takes in a string representing a DNA target and a .FASTA file path and saves the target analysis data to the 
+        saveFile path.\n\nMulti spacer input (e.g `python SpacerSequenceHandler.PY MSI spacerSequences.CSV 
+        metaGenome.FASTA saveFile.CSV`): The program takes in a .CSV or .TSV file path containing spacer sequences 
+        and a .FASTA file path and saves a list of target analysis data to the saveFile path.\n\nMulti target input ( 
+        e.g `python SpacerSequenceHandler.PY MTI targetSequences.CSV metaGenome.FASTA saveFile.CSV`):The program 
+        takes in a .CSV or .TSV file path containing target sequences and a .FASTA file path and saves a list of 
+        target analysis data to the saveFile path.\n\nHelp (e.g. `python SpacerSequenceHandler.py help`): Print this 
+        message. For more detailed help on specific modes, use one of the following commands:\n`python 
+        SpacerSequenceHandler.py help no-input`\n`python SpacerSequenceHandler.py help single-spacer-input`\n`python 
+        SpacerSequenceHandler.py help single-target-input`\n`python SpacerSequenceHandler.py help 
+        multi-spacer-input`\n`python SpacerSequenceHandler.py help multi-target-input`""")
 
 
-def __runProgram():
+def __runNoInput():
     """Runs the program, from deciding the program mode to returning an output."""
+    print("You have entered no input mode. This program can be run with other input")
     inputMode = __queryForProgramType()
     if inputMode == 1 or inputMode == 2:
         metaGenPath = __queryForMetagenomeFile()
         metaGenome = MetaGenome(metaGenPath, metaGenPath)
-        headerRow = ["Spacer (20 bp RNA)", "Guide (35 bp RNA)", "Off-Targets (35 bp DNA)",
+        headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Off-Targets (35 bp DNA)",
                      "On-Target Score", "Off-Target Scores", "Heuristic"]
         data = []
         if metaGenome.size() == 0:
             print("Empty or invalid metagenome provided. Exiting...")
             return
         elif inputMode == 1:
-            guideSequence = __queryForGuideSequence(metaGenome)
+            guideSequence = __queryForGuideSequence()
             if not (len(guideSequence) == 20 or isValidGuideSequence(guideSequence)):
                 print("No valid guide sequences (or contained spacer sequences) given. Exiting...")
                 return
             spacerSequence = SpacerSequence(guideSequence, metaGenome)
             for guideSequenceIndex in range(len(spacerSequence.getGuideSequences())):
                 data.append([spacerSequence.getSpacerSequence(),
-                             complementaryRNA(spacerSequence.getGuideSequences()[guideSequenceIndex]),
+                             complementaryDNA(spacerSequence.getGuideSequences()[guideSequenceIndex]),
                              spacerSequence.getOffTargetSequences(),
                              spacerSequence.getOnTargetScores()[guideSequenceIndex],
                              spacerSequence.getOffTargetScores()[guideSequenceIndex],
@@ -246,7 +273,7 @@ def __runProgram():
                     spacerSequenceEntry = SpacerSequence(guideColumnEntry, metaGenome)
                     for guideSequenceIndex in range(len(spacerSequenceEntry.getGuideSequences())):
                         data.append([spacerSequenceEntry.getSpacerSequence(),
-                                     complementaryRNA(spacerSequenceEntry.getGuideSequences()[guideSequenceIndex]),
+                                     complementaryDNA(spacerSequenceEntry.getGuideSequences()[guideSequenceIndex]),
                                      spacerSequenceEntry.getOffTargetSequences(),
                                      spacerSequenceEntry.getOnTargetScores()[guideSequenceIndex],
                                      spacerSequenceEntry.getOffTargetScores()[guideSequenceIndex],
@@ -271,13 +298,235 @@ def __runProgram():
         return
 
 
+def __runSSI(arguments):
+    """A method that runs the program given a nucleotide RNA or DNA character string representing the spacer sequence,
+    a .FASTA file path representing the metagenome, and (optionally) a .CSV or .TSV file path to save the resulting data
+    to."""
+    if len(arguments) == 2:
+        print("[Error] Missing spacer sequence(s) and metagenome file inputs.")
+    elif len(arguments) == 3:
+        print("[Error] Missing metagenome file input.")
+    elif len(arguments) > 5:
+        print("[Error] Unexpected arguments after metagenome file input: " + str(arguments[5:]))
+    else:
+        if not isValidSpacerInput(arguments[2]):
+            print("[Error] Invalid sgRNA sequence given: " + arguments[2] +
+                  " (expected 20, 23, or 35 DNA/RNA base pairs)")
+        elif not isValidFasta(arguments[3]):
+            print("[Error] Invalid FASTA file path given: " + arguments[3])
+        else:
+            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Off-Target Sequences (35 bp DNA)",
+                         "On-Target Score", "Off-Target Scores", "Heuristic"]
+            data = []
+            metaGen = MetaGenome(arguments[3])
+            print("Analyzing given spacer sequence: " + complementaryRNA(complementaryRNA(arguments[2])))
+            spacerSequence = SpacerSequence(complementaryRNA(complementaryRNA(arguments[2])), metaGen)
+            for guideSequenceIndex in range(len(spacerSequence.getGuideSequences())):
+                data.append([spacerSequence.getSpacerSequence(),
+                             complementaryDNA(spacerSequence.getGuideSequences()[guideSequenceIndex]),
+                             spacerSequence.getOffTargetSequences(),
+                             spacerSequence.getOnTargetScores()[guideSequenceIndex],
+                             spacerSequence.getOffTargetScores()[guideSequenceIndex],
+                             spacerSequence.getHeuristics()[guideSequenceIndex]])
+            if len(arguments) == 5:
+                saveFile = open(arguments[4], "a+")
+                if isValidCSV(arguments[4]):
+                    saveFile.close()
+                    writeListToCSVRow(headerRow, arguments[4])
+                    writeNestedListToCSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                elif isValidTSV(arguments[4]):
+                    saveFile.close()
+                    writeListToTSVRow(headerRow, arguments[4])
+                    writeNestedListToTSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                else:
+                    saveFile.close()
+                    os.remove(arguments[4])
+                    print(data)
+                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+            else:
+                print(data)
+
+
+def __runSTI(arguments):
+    """A method that runs the program given a nucleotide RNA or DNA character string representing the target
+    sequence, a .FASTA file path representing the metagenome, and (optionally) a .CSV or .TSV file path to save the
+    resulting data to. """
+    if len(arguments) == 2:
+        print("[Error] Missing spacer sequence(s) and metagenome file inputs.")
+    elif len(arguments) == 3:
+        print("[Error] Missing metagenome file input.")
+    elif len(arguments) > 5:
+        print("[Error] Unexpected arguments after metagenome file input: " + str(arguments[5:]))
+    else:
+        if not isValidTargetInput(arguments[2]):
+            print("[Error] Invalid target sequence given: " + arguments[2] +
+                  " (expected 20, 23, or 35 DNA base pairs)")
+        elif not isValidFasta(arguments[3]):
+            print("[Error] Invalid FASTA file path given: " + arguments[3])
+        else:
+            metaGen = MetaGenome(arguments[3])
+            print("Analyzing given spacer sequence: " + complementaryRNA(arguments[2]))
+            spacerSequence = SpacerSequence(complementaryRNA(arguments[2]), metaGen)
+            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Off-Target Sequences (35 bp DNA)",
+                         "On-Target Score", "Off-Target Scores", "Heuristic"]
+            data = []
+            for guideSequenceIndex in range(len(spacerSequence.getGuideSequences())):
+                data.append([spacerSequence.getSpacerSequence(),
+                             complementaryDNA(spacerSequence.getGuideSequences()[guideSequenceIndex]),
+                             spacerSequence.getOffTargetSequences(),
+                             spacerSequence.getOnTargetScores()[guideSequenceIndex],
+                             spacerSequence.getOffTargetScores()[guideSequenceIndex],
+                             spacerSequence.getHeuristics()[guideSequenceIndex]])
+            if len(arguments) == 5:
+                saveFile = open(arguments[4], "a+")
+                if isValidCSV(arguments[4]):
+                    saveFile.close()
+                    writeListToCSVRow(headerRow, arguments[4])
+                    writeNestedListToCSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                elif isValidTSV(arguments[4]):
+                    saveFile.close()
+                    writeListToTSVRow(headerRow, arguments[4])
+                    writeNestedListToTSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                else:
+                    saveFile.close()
+                    os.remove(arguments[4])
+                    print(data)
+                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+            else:
+                print(data)
+
+
+def __runMSI(arguments):
+    """A method that runs the program given a .CSV or .TSV file path containing character strings representing spacer
+    sequences in cells, a .FASTA file path representing the metagenome, and (optionally) a .CSV or .TSV file path to
+    save the resulting data to."""
+    if len(arguments) == 2:
+        print("[Error] Missing spacer sequence(s) and metagenome file inputs.")
+    elif len(arguments) == 3:
+        print("[Error] Missing metagenome file input.")
+    elif len(arguments) > 5:
+        print("[Error] Unexpected arguments after metagenome file input: " + str(arguments[5:]))
+    else:
+        if not (isValidCSV(arguments[2]) or isValidTSV(arguments[2])):
+            print("[Error] Invalid CSV/TSV given: " + arguments[2])
+        elif not isValidFasta(arguments[3]):
+            print("[Error] Invalid FASTA file path given: " + arguments[3])
+        else:
+            data = []
+            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Off-Target Sequences (35 bp DNA)",
+                         "On-Target Score", "Off-Target Scores", "Heuristic"]
+            metaGen = MetaGenome(arguments[3])
+            if isValidCSV(arguments[2]):
+                read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
+            else:
+                read_guides = csv.reader(open(arguments[2], newline=''), delimiter="\t")
+            for row in read_guides:
+                for entry in row:
+                    if isValidSpacerInput(entry):
+                        print("Analyzing given spacer sequence: " + complementaryRNA(complementaryRNA(entry)))
+                        spacerSequenceEntry = SpacerSequence(complementaryRNA(complementaryRNA(entry)), metaGen)
+                        for guideSequenceIndex in range(len(spacerSequenceEntry.getGuideSequences())):
+                            data.append([spacerSequenceEntry.getSpacerSequence(),
+                                         complementaryDNA(spacerSequenceEntry.getGuideSequences()[guideSequenceIndex]),
+                                         spacerSequenceEntry.getOffTargetSequences(),
+                                         spacerSequenceEntry.getOnTargetScores()[guideSequenceIndex],
+                                         spacerSequenceEntry.getOffTargetScores()[guideSequenceIndex],
+                                         spacerSequenceEntry.getHeuristics()[guideSequenceIndex]])
+            if len(arguments) == 5:
+                saveFile = open(arguments[4], "a+")
+                if isValidCSV(arguments[4]):
+                    saveFile.close()
+                    writeListToCSVRow(headerRow, arguments[4])
+                    writeNestedListToCSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                elif isValidTSV(arguments[4]):
+                    saveFile.close()
+                    writeListToTSVRow(headerRow, arguments[4])
+                    writeNestedListToTSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                else:
+                    saveFile.close()
+                    os.remove(arguments[4])
+                    print(data)
+                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+            else:
+                print(data)
+
+
+def __runMTI(arguments):
+    """A method that runs the program given a .CSV or .TSV file path containing character strings representing target
+        sequences in cells, a .FASTA file path representing the metagenome, and (optionally) a .CSV or .TSV file path to
+        save the resulting data to."""
+    if len(arguments) == 2:
+        print("[Error] Missing spacer sequence(s) and metagenome file inputs.")
+    elif len(arguments) == 3:
+        print("[Error] Missing metagenome file input.")
+    elif len(arguments) > 5:
+        print("[Error] Unexpected arguments after metagenome file input: " + str(arguments[5:]))
+    else:
+        if not (isValidCSV(arguments[2]) or isValidTSV(arguments[2])):
+            print("[Error] Invalid CSV/TSV given: " + arguments[2])
+        elif not isValidFasta(arguments[3]):
+            print("[Error] Invalid FASTA file path given: " + arguments[3])
+        else:
+            data = []
+            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Off-Target Sequences (35 bp DNA)",
+                         "On-Target Score", "Off-Target Scores", "Heuristic"]
+            metaGen = MetaGenome(arguments[3])
+            if isValidCSV(arguments[2]):
+                read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
+            else:
+                read_guides = csv.reader(open(arguments[2], newline=''), delimiter="\t")
+            for row in read_guides:
+                for entry in row:
+                    if isValidTargetInput(entry):
+                        print("Analyzing given spacer sequence: " + complementaryRNA(entry))
+                        spacerSequenceEntry = SpacerSequence(complementaryRNA(entry), metaGen)
+                        for guideSequenceIndex in range(len(spacerSequenceEntry.getGuideSequences())):
+                            data.append([spacerSequenceEntry.getSpacerSequence(),
+                                         complementaryDNA(spacerSequenceEntry.getGuideSequences()[guideSequenceIndex]),
+                                         spacerSequenceEntry.getOffTargetSequences(),
+                                         spacerSequenceEntry.getOnTargetScores()[guideSequenceIndex],
+                                         spacerSequenceEntry.getOffTargetScores()[guideSequenceIndex],
+                                         spacerSequenceEntry.getHeuristics()[guideSequenceIndex]])
+            if len(arguments) == 5:
+                saveFile = open(arguments[4], "a+")
+                if isValidCSV(arguments[4]):
+                    saveFile.close()
+                    writeListToCSVRow(headerRow, arguments[4])
+                    writeNestedListToCSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                elif isValidTSV(arguments[4]):
+                    saveFile.close()
+                    writeListToTSVRow(headerRow, arguments[4])
+                    writeNestedListToTSVRows(data, arguments[4])
+                    print(data)
+                    print("Successfully saved to " + arguments[4])
+                else:
+                    saveFile.close()
+                    os.remove(arguments[4])
+                    print(data)
+                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+            else:
+                print(data)
+
+
 if __name__ == '__main__':
     """Handles SeedSequence.py, accepting inputs and outputs to the class and returning the result of on-target and 
     off-target calculations and heuristics."""
-    # print('Number of arguments:', len(sys.argv), 'arguments.')
-    # print('Argument List:', str(sys.argv))
     if len(sys.argv) == 1:
-        __runProgram()
+        __runNoInput()
     elif len(sys.argv) >= 2:
         if sys.argv[1] == "help":
             if len(sys.argv) == 2:
@@ -286,103 +535,13 @@ if __name__ == '__main__':
                 __printHelpMessage(sys.argv[2])
             elif len(sys.argv) > 3:
                 print("[Error] Unexpected arguments after help argument: " + str(sys.argv[3:]))
-        elif sys.argv[1] == "SSI" or sys.argv[1] == "MSI":
-            if len(sys.argv) == 2:
-                print("[Error] Missing spacer sequence(s) and metagenome file inputs.")
-            elif len(sys.argv) == 3:
-                print("[Error] Missing metagenome file input.")
-            elif len(sys.argv) > 5:
-                print("[Error] Unexpected arguments after metagenome file input: " + str(sys.argv[5:]))
-            elif sys.argv[1] == "SSI":
-                if not (isValidRNA(sys.argv[2]) and (len(sys.argv[2]) == 20 or len(sys.argv[2]) == 35)):
-                    print("[Error] Invalid sgRNA sequence given: " + sys.argv[2] +
-                          " (expected 20 or 35 RNA base pairs)")
-                elif not isValidFasta(sys.argv[3]):
-                    print("[Error] Invalid FASTA file path given: " + sys.argv[3])
-                else:
-                    metaGen = MetaGenome(sys.argv[3])
-                    spacerSequence = SpacerSequence(sys.argv[2], metaGen)
-                    headerRow = ["Spacer (20 bp RNA)", "Target guide (35 bp DNA)", "Off-Target Sequences (35 bp DNA)",
-                                 "On-Target Score", "Off-Target Scores", "Heuristic"]
-                    data = []
-                    for guideSequenceIndex in range(len(spacerSequence.getGuideSequences())):
-                        data.append([spacerSequence.getSpacerSequence(),
-                                     complementaryRNA(spacerSequence.getGuideSequences()[guideSequenceIndex]),
-                                     spacerSequence.getOffTargetSequences(),
-                                     spacerSequence.getOnTargetScores()[guideSequenceIndex],
-                                     spacerSequence.getOffTargetScores()[guideSequenceIndex],
-                                     spacerSequence.getHeuristics()[guideSequenceIndex]])
-                    if len(sys.argv) == 5:
-                        saveFile = open(sys.argv[4], "a+")
-                        if isValidCSV(sys.argv[4]):
-                            saveFile.close()
-                            writeListToCSVRow(headerRow, sys.argv[4])
-                            writeNestedListToCSVRows(data, sys.argv[4])
-                            print(data)
-                            print("Successfully saved to " + sys.argv[4])
-                        elif isValidTSV(sys.argv[4]):
-                            saveFile.close()
-                            writeListToTSVRow(headerRow, sys.argv[4])
-                            writeNestedListToTSVRows(data, sys.argv[4])
-                            print(data)
-                            print("Successfully saved to " + sys.argv[4])
-                        else:
-                            saveFile.close()
-                            os.remove(sys.argv[4])
-                            print(data)
-                            print("[Error] Could not save data. Invalid TSV or CSV file path: " + sys.argv[4])
-                    else:
-                        print(data)
-            elif sys.argv[1] == "MSI":
-                if not (isValidCSV(sys.argv[2]) or isValidTSV(sys.argv[2])):
-                    print("[Error] Invalid sgRNA CSV/TSV file path given: " + sys.argv[2])
-                elif not isValidFasta(sys.argv[3]):
-                    print("[Error] Invalid FASTA file path given: " + sys.argv[3])
-                else:
-                    data = []
-                    headerRow = ["Spacer (20 bp RNA)", "Target guide (35 bp DNA)", "Off-Target Sequences (35 bp DNA)",
-                                 "On-Target Score", "Off-Target Scores", "Heuristic"]
-                    metaGen = MetaGenome(sys.argv[3])
-                    if isValidCSV(sys.argv[2]):
-                        read_guides = csv.reader(open(sys.argv[2], newline=''), delimiter=',')
-                    else:
-                        read_guides = csv.reader(open(sys.argv[2], newline=''), delimiter="\t")
-                    for row in read_guides:
-                        for entry in row:
-                            if (isValidRNA(entry) or isValidDNA(entry)) and (len(entry) == 20 or len(entry) == 23 or len(entry) == 35):
-                                print(complementaryRNA(complementaryRNA(entry)))
-                                if isValidDNA(entry):
-                                    spacerSequenceEntry = SpacerSequence(complementaryRNA(complementaryRNA(entry)), metaGen)
-                                else:
-                                    spacerSequenceEntry = SpacerSequence(entry, metaGen)
-                                for guideSequenceIndex in range(len(spacerSequenceEntry.getGuideSequences())):
-                                    data.append([spacerSequenceEntry.getSpacerSequence(),
-                                                 complementaryRNA(
-                                                     spacerSequenceEntry.getGuideSequences()[guideSequenceIndex]),
-                                                 spacerSequenceEntry.getOffTargetSequences(),
-                                                 spacerSequenceEntry.getOnTargetScores()[guideSequenceIndex],
-                                                 spacerSequenceEntry.getOffTargetScores()[guideSequenceIndex],
-                                                 spacerSequenceEntry.getHeuristics()[guideSequenceIndex]])
-                    if len(sys.argv) == 5:
-                        saveFile = open(sys.argv[4], "a+")
-                        if isValidCSV(sys.argv[4]):
-                            saveFile.close()
-                            writeListToCSVRow(headerRow, sys.argv[4])
-                            writeNestedListToCSVRows(data, sys.argv[4])
-                            print(data)
-                            print("Successfully saved to " + sys.argv[4])
-                        elif isValidTSV(sys.argv[4]):
-                            saveFile.close()
-                            writeListToTSVRow(headerRow, sys.argv[4])
-                            writeNestedListToTSVRows(data, sys.argv[4])
-                            print(data)
-                            print("Successfully saved to " + sys.argv[4])
-                        else:
-                            saveFile.close()
-                            os.remove(sys.argv[4])
-                            print(data)
-                            print("[Error] Could not save data. Invalid TSV or CSV file path: " + sys.argv[4])
-                    else:
-                        print(data)
+        elif sys.argv[1] == "SSI":
+            __runSSI(sys.argv)
+        elif sys.argv[1] == "STI":
+            __runSTI(sys.argv)
+        elif sys.argv[1] == "MSI":
+            __runMSI(sys.argv)
+        elif sys.argv[1] == "MTI":
+            __runMTI(sys.argv)
         else:
             print("[Error] Unknown command: " + sys.argv[1])

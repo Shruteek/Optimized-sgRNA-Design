@@ -68,7 +68,8 @@ class MetaGenome:
     def addSequences(self, sequencesFile):
         """Method that takes in the filename of a sequence file and adds sequences directly from it to __Sequences."""
         count = 1
-        for record in SeqIO.parse(sequencesFile, "fasta"):
-            if isinstance(record, SeqIO.SeqRecord):
+        with open(sequencesFile) as fileHandler:
+            for record in SeqIO.parse(fileHandler, "fasta"):
                 self.__Sequences.append(Sequence(record, "Sequence " + str(count)))
-            count = count + 1
+                count = count + 1
+

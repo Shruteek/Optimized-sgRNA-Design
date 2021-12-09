@@ -40,27 +40,81 @@ def isValidRNA(RNASequence):
     return True
 
 
-def isValidGuideSequence(guideSequence):
+def isValidGuideSequence(inputSequence):
     """Method that returns whether a given sequence is a valid string representing a 35 base-pair RNA sequence in the
-        format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream"""
-    if not isinstance(guideSequence, str):
+        format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream."""
+    if not isinstance(inputSequence, str):
         # print("Given sequence is not a valid string: " + coreSequence)
         return False
-    elif not isValidRNA(guideSequence):
+    elif not isValidRNA(inputSequence):
         # print("Given guide sequence is not valid RNA: " + coreSequence)
         return False
-    elif not (len(guideSequence) == 35 and guideSequence[27:29] == "CC"):
+    elif not (len(inputSequence) == 35 and inputSequence[27:29] == "CC"):
         # print("Given RNA sequence is not 35 bp with a PAM: " + coreSequence)
         return False
     else:
         return True
 
 
+def isValidSpacerInput(inputSequence):
+    """Method that returns whether a given sequence is a valid string representing any of the following:
+    1. A spacer sequence (20 base-pair RNA sequence that will bind to the target sequence)
+    2. A spacer sequence in DNA form (same as 1., but in DNA format (NOT  complementary DNA, just U -> T substitutions))
+    3. A spacer sequence with PAM (same as 1., but with an additional 3 RNA base-pairs of the form NCC)
+    4. A spacer sequence with PAM in DNA form (same as 3., but in DNA format)
+    5. A guide sequence (35 base-pair RNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
+        6 bp downstream)
+    6. A guide sequence in DNA form (same as 3., but in DNA format (NOT  complementary DNA, just U -> T substitutions))
+    Returns True if the given sequence is any of the above and false otherwise."""
+    if not isinstance(inputSequence, str):
+        return False
+    elif isValidRNA(inputSequence) or isValidDNA(inputSequence):
+        if isValidRNA(inputSequence):
+            if len(inputSequence) == 20:
+                return True
+            elif len(inputSequence) == 23:
+                return inputSequence[21:23] == "CC"
+            else:
+                return isValidGuideSequence(inputSequence)
+        else:
+            if len(inputSequence) == 20:
+                return True
+            elif len(inputSequence) == 23:
+                return complementaryRNA(complementaryRNA(inputSequence))[21:23] == "GG"
+            else:
+                return isValidGuideSequence(complementaryRNA(complementaryRNA(inputSequence)))
+
+    else:
+        return False
+
+
+def isValidTargetInput(inputSequence):
+    """Method that returns whether a given sequence is a valid string representing any of the following:
+    1. A target sequence (20 base-pair DNA sequence that will bind to the spacer sequence)
+    2. A spacer sequence with PAM (same as 1., but with an additional 3 RNA base-pairs of the form NGG)
+    3. A target guide sequence (35 base-pair DNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
+    6 bp downstream)
+    Returns True if the
+    given sequence is any of the above and false otherwise. """
+    if not isinstance(inputSequence, str):
+        return False
+    elif isValidDNA(inputSequence):
+        if len(inputSequence) == 20:
+            return True
+        elif len(inputSequence) == 23:
+            return complementaryRNA(complementaryRNA(inputSequence))[21:23] == "GG"
+        else:
+            return isValidGuideSequence(complementaryRNA(inputSequence))
+
+    else:
+        return False
+
+
 def complementaryRNA(sequence):
     """Method that returns the complementary RNA strand sequence to the given input RNA or DNA sequence."""
     complement = ""
     if not (isValidRNA(sequence) or isValidDNA(sequence)):
-        return ""
+        return complement
     for nucleotide in str.upper(sequence):
         if nucleotide == "A":
             complement = complement + "U"
@@ -78,6 +132,8 @@ def complementaryRNA(sequence):
 def complementaryDNA(sequence):
     """Method that returns the complementary DNA strand sequence to the given input DNA or RNA sequence."""
     complement = ""
+    if not (isValidRNA(sequence) or isValidDNA(sequence)):
+        return complement
     for nucleotide in str.upper(sequence):
         if nucleotide == "A":
             complement = complement + "T"
