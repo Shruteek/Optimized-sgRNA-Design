@@ -171,6 +171,34 @@ class SpacerSequence:
         return 200*(math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
                * (proximityMismatchSubscore ** 6) / 4
 
+    def calcOffTargetEstimate(self, offTargetSequence):
+        """Method that takes in a 35 bp string DNA potential off-target sequence and returns an estimate of the
+        calculated off-target score of the given off-target sequence (without using a reference guide sequence) if
+        a potential RNA guide sequence containing the class spacer sequence were to attempt binding."""
+        if len(offTargetSequence) != 35:
+            return 1
+        HsuMismatchSubscore = 1
+        proximityMismatchSubscore = 0
+        steppedProximityMismatchSubscore = 1
+        offTargetSpacerSequence = offTargetSequence[6:26]
+        for c in range(len(offTargetSpacerSequence)):
+            if offTargetSpacerSequence[c] != complementaryDNA(self.__spacerSequence[c]):
+                proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
+                if c > 0:
+                    mismatchIdentity = complementaryDNA(complementaryDNA(self.__spacerSequence[c])) + '->' + offTargetSpacerSequence[c]
+                    if mismatchIdentity in self.HsuMatrix:
+                        indexDict = self.MismatchToHsuIndexDict[mismatchIdentity]
+                        HsuMismatchSubscore = HsuMismatchSubscore * self.HsuMatrix[indexDict][c - 1]
+                if 20 - c <= 6:
+                    steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.1
+                elif 20 - c <= 12:
+                    steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.05
+                else:
+                    steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.0125
+        proximityMismatchSubscore = (3.5477 - proximityMismatchSubscore) / 3.5477
+        return 200*(math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) \
+               * (proximityMismatchSubscore ** 6) / 4
+
     def __calcHeuristics(self):
         """Method that takes in an instance on-target score and an instance list of off-target scores, and calculates a
         general heuristic to measure the effectiveness of the guide sequence. """

@@ -80,7 +80,7 @@ def isValidSpacerInput(inputSequence):
             if len(inputSequence) == 20:
                 return True
             elif len(inputSequence) == 23:
-                return complementaryRNA(complementaryRNA(inputSequence))[21:23] == "GG"
+                return complementaryRNA(complementaryRNA(inputSequence))[21:23] == "CC"
             else:
                 return isValidGuideSequence(complementaryRNA(complementaryRNA(inputSequence)))
 
@@ -166,9 +166,10 @@ def completeGuideSequence(spacer, metaGenome):
         for sequenceIndex in range(len(matchingSequences)):
             for subsequenceIndex in matchingSubsequenceIndices[sequenceIndex]:
                 if 6 < subsequenceIndex < len(matchingSequences[sequenceIndex]) - 6 and \
-                        matchingSequences[sequenceIndex][subsequenceIndex:(subsequenceIndex+20)] == target and \
-                        matchingSequences[sequenceIndex][(subsequenceIndex+21):(subsequenceIndex+20+3)] == "GG":
-                    return complementaryRNA(matchingSequences[sequenceIndex][(subsequenceIndex-6):(subsequenceIndex+29)])
+                        matchingSequences[sequenceIndex][subsequenceIndex:(subsequenceIndex + 20)] == target and \
+                        matchingSequences[sequenceIndex][(subsequenceIndex + 21):(subsequenceIndex + 20 + 3)] == "GG":
+                    return complementaryRNA(
+                        matchingSequences[sequenceIndex][(subsequenceIndex - 6):(subsequenceIndex + 29)])
         return spacer
 
 
@@ -272,6 +273,25 @@ def saveToTXT(data, saveFilePath):
     saveFile = open(saveFilePath + ".txt", "w+")
     saveFile.write(data)
     return saveFilePath + ".txt"
+
+
+def appendSpacerToData(data, spacer):
+    """Takes in a data list and a SpacerSequence object, and appends the relevant data from the object to the list,
+    even if no valid guide sequences were identified."""
+    if isinstance(data, list):
+        data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
+        if len(spacer.getGuideSequences()) == 0:
+            for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
+                data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
+                             spacer.calcOffTargetEstimate(spacer.getOffTargetSequences()[targetSequenceIndex])])
+        else:
+            for guideSequenceIndex in range(len(spacer.getGuideSequences())):
+                data.append(["", complementaryDNA(spacer.getGuideSequences()[guideSequenceIndex]),
+                             spacer.getHeuristics()[guideSequenceIndex],
+                             spacer.getOnTargetScores()[guideSequenceIndex], "", ""])
+                for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
+                    data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
+                                 spacer.getOffTargetScores()[guideSequenceIndex][targetSequenceIndex]])
 
 
 def writeNestedListToCSVRows(nestedList, saveFilePath):
