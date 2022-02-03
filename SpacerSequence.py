@@ -75,10 +75,11 @@ class SpacerSequence:
         instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
         sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
         guideSequence using the genome otherwise. """
-        self.__onTargetScores = []
-        self.__offTargetSequences = []
-        self.__offTargetScores = []
-        self.__guideSequences = []
+        self.__guideSequences = []  # Length of g
+        self.__onTargetScores = []  # Length of g
+        self.__offTargetSequences = []  # Length of o
+        self.__offTargetCounts = []  # Length of o
+        self.__offTargetScores = []  # Length of o, each element a list of length g
         if not isinstance(genome, MetaGenome):
             return
         if len(spacerOrGuideSequence) == 35:
@@ -97,7 +98,11 @@ class SpacerSequence:
         for targetSequence in targetSequences:
             if complementaryRNA(targetSequence[6:26]) == self.__spacerSequence:
                 self.__guideSequences.append(complementaryRNA(targetSequence))
+            elif targetSequence in self.__offTargetSequences:
+                duplicateTargetIndex = self.__offTargetSequences.index(targetSequence)
+                self.__offTargetCounts[duplicateTargetIndex] += 1
             else:
+                self.__offTargetCounts.append(1)
                 self.__offTargetSequences.append(targetSequence)
         for guideSequence in self.__guideSequences:
             self.__onTargetScores.append(self.calcOnTargetScore(complementaryDNA(guideSequence)))
@@ -167,8 +172,9 @@ class SpacerSequence:
                 else:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.0125
         proximityMismatchSubscore = (3.5477 - proximityMismatchSubscore) / 3.5477
-        activityRatio = self.calcOnTargetScore(offTargetSequence) / self.calcOnTargetScore(complementaryDNA(guideSequence))
-        return 200*(math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
+        activityRatio = self.calcOnTargetScore(offTargetSequence) / self.calcOnTargetScore(
+            complementaryDNA(guideSequence))
+        return 200 * (math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
                * (proximityMismatchSubscore ** 6) / 4
 
     def calcOffTargetEstimate(self, offTargetSequence):
@@ -185,7 +191,8 @@ class SpacerSequence:
             if offTargetSpacerSequence[c] != complementaryDNA(self.__spacerSequence[c]):
                 proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
                 if c > 0:
-                    mismatchIdentity = complementaryDNA(complementaryDNA(self.__spacerSequence[c])) + '->' + offTargetSpacerSequence[c]
+                    mismatchIdentity = complementaryDNA(complementaryDNA(self.__spacerSequence[c])) + '->' + \
+                                       offTargetSpacerSequence[c]
                     if mismatchIdentity in self.HsuMatrix:
                         indexDict = self.MismatchToHsuIndexDict[mismatchIdentity]
                         HsuMismatchSubscore = HsuMismatchSubscore * self.HsuMatrix[indexDict][c - 1]
@@ -196,7 +203,7 @@ class SpacerSequence:
                 else:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.0125
         proximityMismatchSubscore = (3.5477 - proximityMismatchSubscore) / 3.5477
-        return 200*(math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) \
+        return 200 * (math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) \
                * (proximityMismatchSubscore ** 6) / 4
 
     def __calcHeuristics(self):
@@ -228,6 +235,10 @@ class SpacerSequence:
     def getOffTargetScores(self):
         """Getter method that returns the calculated off target scores."""
         return self.__offTargetScores
+
+    def getOffTargetCounts(self):
+        """Getter method that returns the calculated off target counts."""
+        return self.__offTargetCounts
 
     def getHeuristics(self):
         """Getter method that returns the calculated heuristic of the guideSequence."""

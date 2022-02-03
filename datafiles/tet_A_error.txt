@@ -1,0 +1,2 @@
+/var/spool/slurmd/job10654224/slurm_script: line 20: 27321 Killed                  python SpacerSequenceHandler.py MTI 'datafiles/tet_A_guides.tsv' '/global/scratch/projects/fc_pickeringlab/target_analysis_project/Illumina Sequences Folder/pf3_R1_illumina_full.fasta' datafiles/analysis2.csv &>job.out
+slurmstepd: error: Detected 1 oom-kill event(s) in step 10654224.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.

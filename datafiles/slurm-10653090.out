@@ -1,0 +1,1 @@
+/var/spool/slurmd/job10653090/slurm_script: line 16: 10240 Killed                  python SpacerSequenceHandler.py MTI 'datafiles/tet_A_guides.tsv' '/global/scratch/projects/fc_pickeringlab/target_analysis_project/Illumina Sequences Folder/pf3_R1_illumina_full.fasta' datafiles/analysis2.csv

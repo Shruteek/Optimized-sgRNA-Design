@@ -283,15 +283,17 @@ def appendSpacerToData(data, spacer):
         if len(spacer.getGuideSequences()) == 0:
             for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
                 data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
-                             spacer.calcOffTargetEstimate(spacer.getOffTargetSequences()[targetSequenceIndex])])
+                             spacer.calcOffTargetEstimate(spacer.getOffTargetSequences()[targetSequenceIndex]),
+                             spacer.getOffTargetCounts()[targetSequenceIndex]])
         else:
             for guideSequenceIndex in range(len(spacer.getGuideSequences())):
                 data.append(["", complementaryDNA(spacer.getGuideSequences()[guideSequenceIndex]),
                              spacer.getHeuristics()[guideSequenceIndex],
-                             spacer.getOnTargetScores()[guideSequenceIndex], "", ""])
+                             spacer.getOnTargetScores()[guideSequenceIndex], "", "", ""])
                 for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
                     data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
-                                 spacer.getOffTargetScores()[guideSequenceIndex][targetSequenceIndex]])
+                                 spacer.getOffTargetScores()[guideSequenceIndex][targetSequenceIndex],
+                                 spacer.getOffTargetCounts()[targetSequenceIndex]])
 
 
 def writeNestedListToCSVRows(nestedList, saveFilePath):

@@ -242,7 +242,7 @@ def __runNoInput():
         metaGenPath = __queryForMetagenomeFile()
         metaGenome = MetaGenome(metaGenPath, metaGenPath)
         headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                     "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores"]
+                     "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
         data = []
         if metaGenome.size() == 0:
             print("Empty or invalid metagenome provided. Exiting...")
@@ -316,7 +316,7 @@ def __runSSI(arguments):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
             headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores"]
+                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             data = []
             metaGen = MetaGenome(arguments[3])
             print("Analyzing given spacer sequence: " + complementaryRNA(complementaryRNA(arguments[2])))
@@ -362,7 +362,7 @@ def __runSTI(arguments):
             print("Analyzing given spacer sequence: " + complementaryRNA(arguments[2]))
             spacerSequence = SpacerSequence(complementaryRNA(arguments[2]), metaGen)
             headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores"]
+                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             data = []
             appendSpacerToData(data, spacerSequence)
             print(data)
@@ -402,7 +402,7 @@ def __runMSI(arguments):
         else:
             data = []
             headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores"]
+                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             metaGen = MetaGenome(arguments[3])
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
@@ -451,7 +451,7 @@ def __runMTI(arguments):
         else:
             data = []
             headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores"]
+                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             metaGen = MetaGenome(arguments[3])
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
