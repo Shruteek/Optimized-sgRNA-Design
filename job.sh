@@ -11,7 +11,8 @@
 #SBATCH --output=%j_output.txt
 #SBATCH --error=%j_error.txt
 ## Command(s) to run:
-export PATH=/global/home/users/shruteek/.local/bin:$PATH
-dir='/global/scratch/projects/fc_pickeringlab/target_analysis_project/Pickering Lab/Optimized-sgRNA-Design/'
 module load python
-python SpacerSequenceHandler.py MTI 'datafiles/tet_A_guides.tsv' '/global/scratch/projects/fc_pickeringlab/target_analysis_project/Illumina Sequences Folder/pf3_R1_illumina_full.fasta' datafiles/analysis2.csv >& job.out
+## export PATH=$PATH:/global/scratch/projects/fc_pickeringlab/tools/miniconda3/bin/
+dir='/global/scratch/projects/fc_pickeringlab/Optimized-sgRNA-Design/'
+module load python
+python code/SpacerSequenceHandler.py MTI 'datafiles/ctx_m_15_guides.tsv' 'datafiles/101_R1_illumina.fasta' datafiles/analysis1.csv >& job.out
