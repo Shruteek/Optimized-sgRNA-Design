@@ -1,0 +1,11 @@
+Analyzing given spacer sequence: UUGCUGCAGUGGCGGGUGAUACC
+Traceback (most recent call last):
+  File "code/SpacerSequenceHandler.py", line 505, in <module>
+    __runMTI(sys.argv)
+  File "code/SpacerSequenceHandler.py", line 464, in __runMTI
+    spacerSequenceEntry = SpacerSequence(complementaryRNA(entry), metaGen)
+  File "/global/scratch/projects/fc_pickeringlab/Optimized-sgRNA-Design/code/SpacerSequence.py", line 113, in __init__
+    sequenceOffTargetScores.append(self.calcOffTargetScore(guideSequence, offTargetSequence))
+  File "/global/scratch/projects/fc_pickeringlab/Optimized-sgRNA-Design/code/SpacerSequence.py", line 168, in calcOffTargetScore
+    complementaryDNA(complementaryDNA(guideSequence[c + 6])) + '->' + offTargetSpacerSequence[c]]
+KeyError: 'A->N'

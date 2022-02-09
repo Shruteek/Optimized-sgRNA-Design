@@ -15,4 +15,4 @@ module load python
 ## export PATH=$PATH:/global/scratch/projects/fc_pickeringlab/tools/miniconda3/bin/
 dir='/global/scratch/projects/fc_pickeringlab/Optimized-sgRNA-Design/'
 module load python
-python code/SpacerSequenceHandler.py MTI 'datafiles/ctx_m_15_guides.tsv' 'datafiles/101_R1_illumina.fasta' datafiles/analysis1.csv >& job.out
+python code/SpacerSequenceHandler.py MTI 'datafiles/tet_A_guides.tsv' 'datafiles/pf3_R1_illumina_full.fasta' datafiles/analysis2.csv >& job.out

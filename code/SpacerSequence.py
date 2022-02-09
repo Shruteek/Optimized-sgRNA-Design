@@ -77,11 +77,11 @@ class SpacerSequence:
         instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
         sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
         guideSequence using the genome otherwise. """
-        self.__guideSequences = []  # Length of g
-        self.__onTargetScores = []  # Length of g
-        self.__offTargetSequences = []  # Length of o
-        self.__offTargetCounts = []  # Length of o
-        self.__offTargetScores = []  # Length of o, each element a list of length g
+        self.__guideSequences = []  # List of length A with strings of length 35
+        self.__onTargetScores = []  # List of length A with doubles
+        self.__offTargetSequences = []  # List of length B with strings of length 35
+        self.__offTargetCounts = []  # List of length B with integers
+        self.__offTargetScores = []  # List of length A with lists of length B with doubles
         if not isinstance(genome, MetaGenome):
             return
         if len(spacerOrGuideSequence) == 35:
@@ -161,7 +161,7 @@ class SpacerSequence:
         steppedProximityMismatchSubscore = 1
         offTargetSpacerSequence = offTargetSequence[6:26]
         for c in range(len(offTargetSpacerSequence)):
-            if offTargetSpacerSequence[c] != complementaryDNA(guideSequence[c + 6]):
+            if offTargetSpacerSequence[c] != complementaryDNA(guideSequence[c + 6]) and offTargetSpacerSequence[c] != "N":
                 proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
                 if c > 0:
                     indexDict = self.MismatchToHsuIndexDict[
