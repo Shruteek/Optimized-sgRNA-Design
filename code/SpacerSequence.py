@@ -4,7 +4,7 @@ from MetaGenome import MetaGenome
 
 
 class SpacerSequence:
-    """A class where each instance represents a unique 35-base pair sequence on an sgRNA. The class contains instance
+    """A class where each instance represents a unique 20-base pair sequence on an sgRNA. The class contains instance
     variables and methods that analyze the on-target and off-target efficiency and effects of the sequence.
     TERMS KEY:
     Guide sequence: 35 base-pair 3'-5' RNA sequence with 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream
@@ -72,42 +72,39 @@ class SpacerSequence:
                              [2.5, 2.5, 3.33, -1, -1, -1, -1],
                              [5, 5, -1, -1, -1, -1, -1]]
 
-    def __init__(self, spacerOrGuideSequence, genome):
-        """Initialization method that takes in a 35 bp RNA guide sequence and an associated metaGenome class file and
-        instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
-        sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
-        guideSequence using the genome otherwise. """
-        self.__guideSequences = []  # List of length A with strings of length 35
+    def __init__(self, spacerOrTargetSequence, genome):
+        """Initialization method that takes in a 35 bp DNA target guide sequence, a 23 bp DNA target sequence + PAM,
+        or a 20 bp DNA target sequence, plus an associated metaGenome class file and instantiates, checking to ensure
+        the guideSequence is in the proper format (6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream),
+        as well as that given genome is a MetaGenome, trying to complete the guideSequence using the genome
+        otherwise. """
+        self.__onTargetSequences = []  # List of length A with strings of length 35
         self.__onTargetScores = []  # List of length A with doubles
         self.__offTargetSequences = []  # List of length B with strings of length 35
         self.__offTargetCounts = []  # List of length B with integers
+        self.__offTargetEstimates = []  # List of length B with doubles
         self.__offTargetScores = []  # List of length A with lists of length B with doubles
         if not isinstance(genome, MetaGenome):
             return
-        if len(spacerOrGuideSequence) == 35:
-            if not isValidGuideSequence(spacerOrGuideSequence):
-                return
-            else:
-                self.__spacerSequence = spacerOrGuideSequence[6:26]
-                self.__guideSequences.append(spacerOrGuideSequence)
-        elif len(spacerOrGuideSequence) == 20:
-            self.__spacerSequence = spacerOrGuideSequence
-        elif len(spacerOrGuideSequence) == 23:
-            self.__spacerSequence = spacerOrGuideSequence[0:20]
+        if len(spacerOrTargetSequence) == 20:
+            self.__spacerSequence = convertToRNA(spacerOrTargetSequence)
+        elif len(spacerOrTargetSequence) == 23:
+            self.__spacerSequence = convertToRNA(spacerOrTargetSequence[0:20])
         else:
             self.__spacerSequence = "ACUGACUGACUGACUGACUG"
         targetSequences = genome.findTargetsFromSpacer(self.__spacerSequence)
         for targetSequence in targetSequences:
-            if complementaryRNA(targetSequence[6:26]) == self.__spacerSequence:
-                self.__guideSequences.append(complementaryRNA(targetSequence))
+            if targetSequence[6:26] == convertToDNA(self.__spacerSequence):
+                self.__onTargetSequences.append(targetSequence)
             elif targetSequence in self.__offTargetSequences:
                 duplicateTargetIndex = self.__offTargetSequences.index(targetSequence)
                 self.__offTargetCounts[duplicateTargetIndex] += 1
             else:
                 self.__offTargetCounts.append(1)
                 self.__offTargetSequences.append(targetSequence)
-        for guideSequence in self.__guideSequences:
-            self.__onTargetScores.append(self.calcOnTargetScore(complementaryDNA(guideSequence)))
+                self.__offTargetEstimates.append(self.calcOffTargetEstimate(targetSequence))
+        for guideSequence in self.__onTargetSequences:
+            self.__onTargetScores.append(self.calcOnTargetScore(guideSequence))
             sequenceOffTargetScores = []
             for offTargetSequence in self.__offTargetSequences:
                 sequenceOffTargetScores.append(self.calcOffTargetScore(guideSequence, offTargetSequence))
@@ -116,7 +113,7 @@ class SpacerSequence:
 
     def calcOnTargetScore(self, targetSequence):
         """Method that takes in a 35 bp guide DNA sequence and returns the calculated on-target score of it, assuming a
-        perfectly complementary RNA guide sequence on the sgRNA."""
+        perfectly complementary RNA spacer sequence on the sgRNA."""
         if len(targetSequence) != 35:
             return 0
         CRISPRscanSubscore = 0
@@ -150,10 +147,10 @@ class SpacerSequence:
             penaltyScore = self.PAMDensityScoreMatrix[reversePAMs][forwardPAMs] - GCADensityScore / 5
         return CRISPRscanSubscore / penaltyScore
 
-    def calcOffTargetScore(self, guideSequence, offTargetSequence):
-        """Method that takes in a 35 bp string RNA guide sequence and a 35 bp string DNA potential off-target sequence
-        and returns the calculated off-target score of the given off-target sequence if the given RNA guide sequence
-        were to attempt binding. """
+    def calcOffTargetScore(self, onTargetSequence, offTargetSequence):
+        """Method that takes in a 35 bp string DNA on-target sequence and a 35 bp string DNA potential off-target
+        sequence and returns the calculated off-target score of the given off-target sequence with respect to the
+        given DNA on-target sequence. """
         if len(offTargetSequence) != 35:
             return 1
         HsuMismatchSubscore = 1
@@ -161,11 +158,11 @@ class SpacerSequence:
         steppedProximityMismatchSubscore = 1
         offTargetSpacerSequence = offTargetSequence[6:26]
         for c in range(len(offTargetSpacerSequence)):
-            if offTargetSpacerSequence[c] != complementaryDNA(guideSequence[c + 6]) and offTargetSpacerSequence[c] != "N":
+            if offTargetSpacerSequence[c] != onTargetSequence[c + 6] and offTargetSpacerSequence[c] != "N":
                 proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
                 if c > 0:
                     indexDict = self.MismatchToHsuIndexDict[
-                        complementaryDNA(complementaryDNA(guideSequence[c + 6])) + '->' + offTargetSpacerSequence[c]]
+                        onTargetSequence[c + 6] + '->' + complementaryDNA(offTargetSpacerSequence[c])]
                     HsuMismatchSubscore = HsuMismatchSubscore * self.HsuMatrix[indexDict][c - 1]
                 if 20 - c <= 6:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.1
@@ -175,7 +172,7 @@ class SpacerSequence:
                     steppedProximityMismatchSubscore = steppedProximityMismatchSubscore - 0.0125
         proximityMismatchSubscore = (3.5477 - proximityMismatchSubscore) / 3.5477
         activityRatio = self.calcOnTargetScore(offTargetSequence) / self.calcOnTargetScore(
-            complementaryDNA(guideSequence))
+            onTargetSequence)
         return 200 * (math.sqrt(HsuMismatchSubscore) + steppedProximityMismatchSubscore) * (activityRatio ** 2) \
                * (proximityMismatchSubscore ** 6) / 4
 
@@ -190,11 +187,11 @@ class SpacerSequence:
         steppedProximityMismatchSubscore = 1
         offTargetSpacerSequence = offTargetSequence[6:26]
         for c in range(len(offTargetSpacerSequence)):
-            if offTargetSpacerSequence[c] != complementaryDNA(self.__spacerSequence[c]):
+            if convertToDNA(self.__spacerSequence[c]) != offTargetSpacerSequence[c]:
                 proximityMismatchSubscore = proximityMismatchSubscore + 1 / (20 - c)
                 if c > 0:
-                    mismatchIdentity = complementaryDNA(complementaryDNA(self.__spacerSequence[c])) + '->' + \
-                                       offTargetSpacerSequence[c]
+                    mismatchIdentity = convertToDNA(self.__spacerSequence[c]) + '->' + \
+                                       complementaryDNA(offTargetSpacerSequence[c])
                     if mismatchIdentity in self.HsuMatrix:
                         indexDict = self.MismatchToHsuIndexDict[mismatchIdentity]
                         HsuMismatchSubscore = HsuMismatchSubscore * self.HsuMatrix[indexDict][c - 1]
@@ -222,9 +219,9 @@ class SpacerSequence:
         """Method that returns the 20 bp string RNA spacer sequence of the instance."""
         return self.__spacerSequence
 
-    def getGuideSequences(self):
+    def getOnTargetSequences(self):
         """Method that returns the 35 bp string RNA guide sequences of the instance."""
-        return self.__guideSequences
+        return self.__onTargetSequences
 
     def getOffTargetSequences(self):
         """Method that returns the 35 bp string DNA off-target sequences of the instance."""
@@ -241,6 +238,10 @@ class SpacerSequence:
     def getOffTargetCounts(self):
         """Getter method that returns the calculated off target counts."""
         return self.__offTargetCounts
+
+    def getOffTargetCounts(self):
+        """Getter method that returns the calculated off target score estimates."""
+        return self.__offTargetEstimates
 
     def getHeuristics(self):
         """Getter method that returns the calculated heuristic of the guideSequence."""

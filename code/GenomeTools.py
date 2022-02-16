@@ -129,6 +129,44 @@ def complementaryRNA(sequence):
     return complement
 
 
+def convertToRNA(sequence):
+    """Method that converts the given input RNA or DNA sequence to RNA."""
+    complement = ""
+    if not (isValidRNA(sequence) or isValidDNA(sequence)):
+        return complement
+    for nucleotide in str.upper(sequence):
+        if nucleotide == "A":
+            complement = complement + "A"
+        elif nucleotide == "C":
+            complement = complement + "C"
+        elif nucleotide == "U":
+            complement = complement + "U"
+        elif nucleotide == "T":
+            complement = complement + "U"
+        elif nucleotide == "G":
+            complement = complement + "G"
+    return complement
+
+
+def convertToDNA(sequence):
+    """Method that converts the given input RNA or DNA sequence to DNA."""
+    complement = ""
+    if not (isValidRNA(sequence) or isValidDNA(sequence)):
+        return complement
+    for nucleotide in str.upper(sequence):
+        if nucleotide == "A":
+            complement = complement + "A"
+        elif nucleotide == "C":
+            complement = complement + "C"
+        elif nucleotide == "U":
+            complement = complement + "T"
+        elif nucleotide == "T":
+            complement = complement + "T"
+        elif nucleotide == "G":
+            complement = complement + "G"
+    return complement
+
+
 def complementaryDNA(sequence):
     """Method that returns the complementary DNA strand sequence to the given input DNA or RNA sequence."""
     complement = ""
@@ -181,7 +219,7 @@ def findTargetsFromSpacer(spacerSequence, substrateSequence, mismatchStrictness)
         # print("Given sequence is not a valid spacer sequence: " + spacerSequence)
         return []
     else:
-        targetSequence = complementaryDNA(spacerSequence)
+        targetSequence = convertToDNA(spacerSequence)
         offTargets = []
         crosscorrelation = crossCorrelateSequencesEfficiently(targetSequence, substrateSequence)
         for shift in range(len(crosscorrelation)):
@@ -275,25 +313,55 @@ def saveToTXT(data, saveFilePath):
     return saveFilePath + ".txt"
 
 
-def appendSpacerToData(data, spacer):
+def appendSpacerToDataOld(data, spacer):
     """Takes in a data list and a SpacerSequence object, and appends the relevant data from the object to the list,
-    even if no valid guide sequences were identified."""
+    even if no valid guide sequences were identified. Antiquated: Calculates a different off-target score for each
+    on-target sequence based on the ratio term, which is neglected in the new function. """
     if isinstance(data, list):
         data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
-        if len(spacer.getGuideSequences()) == 0:
+        if len(spacer.getOnTargetSequences()) == 0:
             for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
                 data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
-                             spacer.calcOffTargetEstimate(spacer.getOffTargetSequences()[targetSequenceIndex]),
+                             spacer.getOffTargetEstimates()[targetSequenceIndex],
                              spacer.getOffTargetCounts()[targetSequenceIndex]])
         else:
-            for guideSequenceIndex in range(len(spacer.getGuideSequences())):
-                data.append(["", complementaryDNA(spacer.getGuideSequences()[guideSequenceIndex]),
+            for guideSequenceIndex in range(len(spacer.getOnTargetSequences())):
+                data.append(["", complementaryDNA(spacer.getOnTargetSequences()[guideSequenceIndex]),
                              spacer.getHeuristics()[guideSequenceIndex],
                              spacer.getOnTargetScores()[guideSequenceIndex], "", "", ""])
                 for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
                     data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
                                  spacer.getOffTargetScores()[guideSequenceIndex][targetSequenceIndex],
                                  spacer.getOffTargetCounts()[targetSequenceIndex]])
+
+
+def appendSpacerToData(data, spacer):
+    """Takes in a data list and a SpacerSequence object, and appends the relevant data from the object to the list,
+    with on-target scores and off-target scores considered separately."""
+    if isinstance(data, list):
+        if len(spacer.getOnTargetSequences()) == 0:
+            data.append(["Spacer (20 bp RNA)", "Off-Target Sequence (35 bp DNA)", "Off-Target Score",
+                         "Off-Target Count", "", ""])
+            data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
+            for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
+                data.append(["", complementaryDNA(spacer.getOffTargetSequences()[targetSequenceIndex]),
+                             spacer.getOffTargetEstimates()[targetSequenceIndex],
+                             spacer.getOffTargetCounts()[targetSequenceIndex], "", ""])
+        else:
+            data.append(["Spacer (20 bp RNA)", "On-Target Sequence (35 bp DNA)", "On-Target Heuristic",
+                         "On-Target Score", "", ""])
+            data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
+            for guideSequenceIndex in range(len(spacer.getOnTargetSequences())):
+                data.append(["", complementaryDNA(spacer.getOnTargetSequences()[guideSequenceIndex]),
+                             spacer.getHeuristics()[guideSequenceIndex],
+                             spacer.getOnTargetScores()[guideSequenceIndex], "", ""])
+            data.append(["Spacer (20 bp RNA)", "Off-Target Sequence (35 bp DNA)", "Off-Target Score",
+                         "Off-Target Count", "", ""])
+            data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
+            for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
+                data.append(["", spacer.getOffTargetSequences()[targetSequenceIndex],
+                             spacer.getOffTargetEstimates()[targetSequenceIndex],
+                             spacer.getOffTargetCounts()[targetSequenceIndex], "", ""])
 
 
 def writeNestedListToCSVRows(nestedList, saveFilePath):

@@ -103,15 +103,16 @@ def __queryForProgramType():
     inputMode = "initial"
     timesQueried = 0
     while not (inputMode.isnumeric() and (0 < int(inputMode) <= exitIndex)) and timesQueried < 5:
-        print("Below are a list of modes for this program, by their index:")
-        print("(1) Enter a string guide/spacer sequence plus a metagenome and return its on/off-target scores and "
-              + "heuristics.")
-        print("(2) Enter a delimiter-separated value format (e.g. CSV or TSV) of guide/spacer sequences plus a "
-              + "metagenome and return a table of their on/off-target scores and heuristics.")
-        print("(3) Exit this program.")
-        if not timesQueried == 0:
-            print("Invalid program type chosen. Please try again.")
-        inputMode = input("Please choose which program mode to execute: ")
+        if timesQueried == 0:
+            print("Below are a list of program submodes for this mode, ordered by their index:")
+            print("(1) Enter a string guide/spacer sequence plus a metagenome and return its on/off-target scores and "
+                  + "heuristics.")
+            print("(2) Enter a delimiter-separated value format (e.g. CSV or TSV) of guide/spacer sequences plus a "
+                  + "metagenome and return a table of their on/off-target scores and heuristics.")
+            print("(3) Exit this program.")
+        else:
+            print("Invalid program submode chosen. Please try again.")
+        inputMode = input("Please choose which program submode to execute: ")
         timesQueried = timesQueried + 1
         if timesQueried == 5 and not (inputMode.isnumeric() and (0 < int(inputMode) <= exitIndex)):
             print("Queried too many times. Exiting...")
@@ -236,13 +237,13 @@ def __printHelpMessage(helpArgument):
 
 def __runNoInput():
     """Runs the program, from deciding the program mode to returning an output."""
-    print("You have entered no input mode. This program can be run with other input")
+    print("You have entered no input mode. This mode is deprecated, since this program can be run with other forms "
+          "of input. To get help with entering another mode, exit this mode by typing '3' and instead type:"
+          "\npython SpacerSequenceHandler.py help")
     inputMode = __queryForProgramType()
     if inputMode == 1 or inputMode == 2:
         metaGenPath = __queryForMetagenomeFile()
         metaGenome = MetaGenome(metaGenPath, metaGenPath)
-        headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                     "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
         data = []
         if metaGenome.size() == 0:
             print("Empty or invalid metagenome provided. Exiting...")
@@ -253,13 +254,8 @@ def __runNoInput():
                 print("No valid guide sequences (or contained spacer sequences) given. Exiting...")
                 return
             spacerSequence = SpacerSequence(guideSequence, metaGenome)
-            for guideSequenceIndex in range(len(spacerSequence.getGuideSequences())):
-                data.append([spacerSequence.getSpacerSequence(),
-                             complementaryDNA(spacerSequence.getGuideSequences()[guideSequenceIndex]),
-                             spacerSequence.getOffTargetSequences(),
-                             spacerSequence.getOnTargetScores()[guideSequenceIndex],
-                             spacerSequence.getOffTargetScores()[guideSequenceIndex],
-                             spacerSequence.getHeuristics()[guideSequenceIndex]])
+            for guideSequenceIndex in range(len(spacerSequence.getOnTargetSequences())):
+                appendSpacerToData(spacerSequence, data)
 
         elif inputMode == 2:
             delimiter = __queryForDelimiterType()
@@ -271,14 +267,7 @@ def __runNoInput():
             for guideRow in guidesTable:
                 for guideColumnEntry in guideRow:
                     spacerSequenceEntry = SpacerSequence(guideColumnEntry, metaGenome)
-                    for guideSequenceIndex in range(len(spacerSequenceEntry.getGuideSequences())):
-                        data.append([spacerSequenceEntry.getSpacerSequence(),
-                                     complementaryDNA(spacerSequenceEntry.getGuideSequences()[guideSequenceIndex]),
-                                     spacerSequenceEntry.getOffTargetSequences(),
-                                     spacerSequenceEntry.getOnTargetScores()[guideSequenceIndex],
-                                     spacerSequenceEntry.getOffTargetScores()[guideSequenceIndex],
-                                     spacerSequenceEntry.getHeuristics()[guideSequenceIndex]])
-
+                    appendSpacerToData(spacerSequenceEntry, data)
         doSaveToFile = __queryForSave()
         if doSaveToFile:
             saveFilePath = __queryForSaveFile()
@@ -286,11 +275,9 @@ def __runNoInput():
                 saveFile = open(saveFilePath, "a+")
                 saveFile.close()
                 if isValidCSV(saveFilePath):
-                    writeListToCSVRow(headerRow, saveFilePath)
                     writeNestedListToCSVRows(data, saveFilePath)
                     print("Program data saved to " + saveFilePath)
                 elif isValidTSV(saveFilePath):
-                    writeListToTSVRow(headerRow, saveFilePath)
                     writeNestedListToTSVRows(data, saveFilePath)
                     print("Program data saved to " + saveFilePath)
     elif inputMode == 3:
@@ -315,24 +302,20 @@ def __runSSI(arguments):
         elif not isValidFasta(arguments[3]):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
-            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             data = []
             metaGen = MetaGenome(arguments[3])
             print("Analyzing given spacer sequence: " + complementaryRNA(complementaryRNA(arguments[2])))
-            spacerSequence = SpacerSequence(complementaryRNA(complementaryRNA(arguments[2])), metaGen)
+            spacerSequence = SpacerSequence(complementaryDNA(arguments[2]), metaGen)
             appendSpacerToData(data, spacerSequence)
             print(data)
             if len(arguments) == 5:
                 saveFile = open(arguments[4], "a+")
                 if isValidCSV(arguments[4]):
                     saveFile.close()
-                    writeListToCSVRow(headerRow, arguments[4])
                     writeNestedListToCSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 elif isValidTSV(arguments[4]):
                     saveFile.close()
-                    writeListToTSVRow(headerRow, arguments[4])
                     writeNestedListToTSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 else:
@@ -361,8 +344,6 @@ def __runSTI(arguments):
             metaGen = MetaGenome(arguments[3])
             print("Analyzing given spacer sequence: " + complementaryRNA(arguments[2]))
             spacerSequence = SpacerSequence(complementaryRNA(arguments[2]), metaGen)
-            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             data = []
             appendSpacerToData(data, spacerSequence)
             print(data)
@@ -370,12 +351,10 @@ def __runSTI(arguments):
                 saveFile = open(arguments[4], "a+")
                 if isValidCSV(arguments[4]):
                     saveFile.close()
-                    writeListToCSVRow(headerRow, arguments[4])
                     writeNestedListToCSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 elif isValidTSV(arguments[4]):
                     saveFile.close()
-                    writeListToTSVRow(headerRow, arguments[4])
                     writeNestedListToTSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 else:
@@ -401,8 +380,6 @@ def __runMSI(arguments):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
             data = []
-            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             metaGen = MetaGenome(arguments[3])
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
@@ -419,12 +396,10 @@ def __runMSI(arguments):
                 saveFile = open(arguments[4], "a+")
                 if isValidCSV(arguments[4]):
                     saveFile.close()
-                    writeListToCSVRow(headerRow, arguments[4])
                     writeNestedListToCSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 elif isValidTSV(arguments[4]):
                     saveFile.close()
-                    writeListToTSVRow(headerRow, arguments[4])
                     writeNestedListToTSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 else:
@@ -450,8 +425,6 @@ def __runMTI(arguments):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
             data = []
-            headerRow = ["Spacer (20 bp RNA)", "Target Guide Sequence (35 bp DNA)", "Guide Sequence Heuristic",
-                         "On-Target Score", "Off-Targets (35 bp DNA)", "Off-Target Scores", "Off-Target Count"]
             metaGen = MetaGenome(arguments[3])
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
@@ -460,20 +433,18 @@ def __runMTI(arguments):
             for row in read_guides:
                 for entry in row:
                     if isValidTargetInput(entry):
-                        print("Analyzing given spacer sequence: " + complementaryRNA(entry))
-                        spacerSequenceEntry = SpacerSequence(complementaryRNA(entry), metaGen)
+                        print("Analyzing given target sequence: " + entry)
+                        spacerSequenceEntry = SpacerSequence(entry, metaGen)
                         appendSpacerToData(data, spacerSequenceEntry)
             print(data)
             if len(arguments) == 5:
                 saveFile = open(arguments[4], "a+")
                 if isValidCSV(arguments[4]):
                     saveFile.close()
-                    writeListToCSVRow(headerRow, arguments[4])
                     writeNestedListToCSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 elif isValidTSV(arguments[4]):
                     saveFile.close()
-                    writeListToTSVRow(headerRow, arguments[4])
                     writeNestedListToTSVRows(data, arguments[4])
                     print("Successfully saved to " + arguments[4])
                 else:
