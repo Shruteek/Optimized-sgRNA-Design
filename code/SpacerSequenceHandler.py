@@ -3,6 +3,7 @@ import os
 from GenomeTools import *
 from MetaGenome import MetaGenome
 from SpacerSequence import SpacerSequence
+import time
 
 
 def __queryForMetagenomeFile():
@@ -380,19 +381,25 @@ def __runMSI(arguments):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
             data = []
+            subStartTime = time.time()
             metaGen = MetaGenome(arguments[3])
+            print("Metagenome loading runtime (seconds): " + (time.time() - subStartTime))
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
             else:
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter="\t")
+            subStartTime = time.time()
             for row in read_guides:
                 for entry in row:
                     if isValidSpacerInput(entry):
                         print("Analyzing given spacer sequence: " + complementaryRNA(complementaryRNA(entry)))
+                        subStartTime2 = time.time()
                         spacerSequenceEntry = SpacerSequence(complementaryRNA(complementaryRNA(entry)), metaGen)
+                        print("Sequence analysis runtime (seconds): " + (time.time() - subStartTime2))
                         appendSpacerToData(data, spacerSequenceEntry)
-            print(data)
+            print("Target analysis and data compilation runtime (seconds): " + (time.time() - subStartTime))
             if len(arguments) == 5:
+                subStartTime = time.time()
                 saveFile = open(arguments[4], "a+")
                 if isValidCSV(arguments[4]):
                     saveFile.close()
@@ -406,6 +413,8 @@ def __runMSI(arguments):
                     saveFile.close()
                     os.remove(arguments[4])
                     print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+                print("File save runtime (seconds): " + (time.time() - subStartTime))
+            print(data)
 
 
 def __runMTI(arguments):
@@ -425,19 +434,25 @@ def __runMTI(arguments):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
             data = []
+            subStartTime = time.time()
             metaGen = MetaGenome(arguments[3])
+            print("Metagenome loading runtime (seconds): " + (time.time() - subStartTime))
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
             else:
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter="\t")
+            subStartTime = time.time()
             for row in read_guides:
                 for entry in row:
                     if isValidTargetInput(entry):
                         print("Analyzing given target sequence: " + entry)
+                        subStartTime2 = time.time()
                         spacerSequenceEntry = SpacerSequence(entry, metaGen)
+                        print("Sequence analysis runtime (seconds): " + (time.time() - subStartTime2))
                         appendSpacerToData(data, spacerSequenceEntry)
-            print(data)
+            print("Target analysis and data compilation runtime (seconds): " + (time.time() - subStartTime))
             if len(arguments) == 5:
+                subStartTime = time.time()
                 saveFile = open(arguments[4], "a+")
                 if isValidCSV(arguments[4]):
                     saveFile.close()
@@ -451,6 +466,8 @@ def __runMTI(arguments):
                     saveFile.close()
                     os.remove(arguments[4])
                     print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+                print("File save runtime (seconds): " + (time.time() - subStartTime))
+            print(data)
 
 
 if __name__ == '__main__':
@@ -459,6 +476,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         __runNoInput()
     elif len(sys.argv) >= 2:
+        startTime = time.time()
         if sys.argv[1] == "help":
             if len(sys.argv) == 2:
                 __printHelpMessage("")
@@ -476,4 +494,5 @@ if __name__ == '__main__':
             __runMTI(sys.argv)
         else:
             print("[Error] Unknown command: " + sys.argv[1])
+        print("Program runtime (seconds): " + (time.time() - startTime))
 
