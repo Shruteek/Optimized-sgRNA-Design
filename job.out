@@ -1,1 +1,5 @@
-[Error] Invalid FASTA file path given: C:/Program Files/Git/global/scratch/projects/fc_pickeringlab/target_analysis_project/Illumina Sequences Folder/pf3_R1_illumina_full.fasta
+[Error] Invalid FASTA file path given: datafiles/pf3_R1_illumina_full.fasta
+Traceback (most recent call last):
+  File "code/SpacerSequenceHandler.py", line 497, in <module>
+    print("Program runtime (seconds): " + (time.time() - startTime))
+TypeError: can only concatenate str (not "float") to str
