@@ -1,5 +1,11 @@
-[Error] Invalid FASTA file path given: datafiles/pf3_R1_illumina_full.fasta
+Metagenome loading runtime (seconds): 640.2002236843109
+Analyzing given target sequence: AACGACGTCACCGCCCACTATGG
+Sequence analysis runtime (seconds): 2867.33611869812
 Traceback (most recent call last):
-  File "code/SpacerSequenceHandler.py", line 497, in <module>
-    print("Program runtime (seconds): " + (time.time() - startTime))
-TypeError: can only concatenate str (not "float") to str
+  File "code/SpacerSequenceHandler.py", line 494, in <module>
+    __runMTI(sys.argv)
+  File "code/SpacerSequenceHandler.py", line 452, in __runMTI
+    appendSpacerToData(data, spacerSequenceEntry)
+  File "/global/scratch/projects/fc_pickeringlab/Optimized-sgRNA-Design/code/GenomeTools.py", line 363, in appendSpacerToData
+    spacer.getOffTargetEstimates()[targetSequenceIndex],
+AttributeError: 'SpacerSequence' object has no attribute 'getOffTargetEstimates'

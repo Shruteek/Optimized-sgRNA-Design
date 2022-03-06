@@ -239,7 +239,7 @@ class SpacerSequence:
         """Getter method that returns the calculated off target counts."""
         return self.__offTargetCounts
 
-    def getOffTargetCounts(self):
+    def getOffTargetEstimates(self):
         """Getter method that returns the calculated off target score estimates."""
         return self.__offTargetEstimates
 
