@@ -191,9 +191,6 @@ def findTargetsFromSpacer(spacerSequence, substrateSequence, mismatchStrictness)
         crosscorrelation = crossCorrelateSequencesEfficiently(targetSequence, substrateSequence)
         for shift in range(len(crosscorrelation)):
             if crosscorrelation[shift] >= len(targetSequence) - mismatchStrictness:
-                # print("Off-target sequence: " + substrateSequence[shift + 6:(shift + 6 + 20 + 3)]
-                #       + " against " + targetSequence)
-                # print("with a correlation of " + str(crosscorrelation[shift]))
                 offTargets.append(substrateSequence[shift:(shift + 6 + 6 + 20 + 3)])
         return offTargets
 
@@ -205,20 +202,13 @@ def crossCorrelateSequences(targetSequence, substrateSequence):
     returns the numerical correlation results as a list of integers, with each correlation result between 20 bp
     targetSequence and substrate 35 bp subsequence being stored at the cross-correlation shift index of the list.
     Records 0 for any 35 bp region without a PAM."""
-    if not isValidDNA(targetSequence) or not isValidDNA(substrateSequence):
-        # print("Given sequences are not valid DNA: " + targetSequence + " and " + substrateSequence)
-        return []
-    elif len(targetSequence) != 20:
-        # print("Given targetSequence is not 20 nucleotides long.")
-        return []
-    else:
-        crosscorrelation = []
-        for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
-            correlation = 0
-            if substrateSequence[(shift + 27):(shift + 29)] == "GG":
-                correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
-            crosscorrelation.append(correlation)
-        return crosscorrelation
+    crosscorrelation = []
+    for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
+        correlation = 0
+        if substrateSequence[(shift + 27):(shift + 29)] == "GG":
+            correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
+        crosscorrelation.append(correlation)
+    return crosscorrelation
 
 
 def crossCorrelateSequencesEfficiently(targetSequence, substrateSequence):
@@ -231,25 +221,18 @@ def crossCorrelateSequencesEfficiently(targetSequence, substrateSequence):
     as a list of integers, with each correlation result between 20 bp targetSequence and substrate 35 bp subsequence
     being stored at the cross-correlation shift index of the list. Records 0 for any 35 bp region without a PAM.
     Records just the 10 bp PAM-adjacent correlation for any region with more than 1 PAM-adjacent mismatch. """
-    if not isValidDNA(targetSequence):
-        return []
-    elif not isValidDNA(substrateSequence):
-        return []
-    elif len(targetSequence) != 20:
-        return []
-    else:
-        crosscorrelation = []
-        PAMAdjacentLength = 10
-        PAMMismatchStrictness = 1
-        for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
-            correlation = 0
-            if substrateSequence[(shift + 27):(shift + 29)] == "GG":
-                correlation = correlateSequences(targetSequence[0:PAMAdjacentLength],
-                                                 substrateSequence[(shift + 6):(shift + 6 + PAMAdjacentLength)])
-                if correlation >= PAMAdjacentLength - PAMMismatchStrictness:
-                    correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
-            crosscorrelation.append(correlation)
-        return crosscorrelation
+    crosscorrelation = []
+    PAMAdjacentLength = 10
+    PAMMismatchStrictness = 1
+    for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
+        correlation = 0
+        if substrateSequence[(shift + 27):(shift + 29)] == "GG":
+            correlation = correlateSequences(targetSequence[0:PAMAdjacentLength],
+                                             substrateSequence[(shift + 6):(shift + 6 + PAMAdjacentLength)])
+            if correlation >= PAMAdjacentLength - PAMMismatchStrictness:
+                correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
+        crosscorrelation.append(correlation)
+    return crosscorrelation
 
 
 def correlateSequences(targetSequence, substrateSubsequence):
