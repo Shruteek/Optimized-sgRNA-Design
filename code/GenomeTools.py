@@ -56,58 +56,25 @@ def isValidGuideSequence(inputSequence):
         return True
 
 
-def isValidSpacerInput(inputSequence):
+def isValidTargetSpacerInput(inputSequence):
     """Method that returns whether a given sequence is a valid string representing any of the following:
-    1. A spacer sequence (20 base-pair RNA sequence that will bind to the target sequence)
-    2. A spacer sequence in DNA form (same as 1., but in DNA format (NOT  complementary DNA, just U -> T substitutions))
-    3. A spacer sequence with PAM (same as 1., but with an additional 3 RNA base-pairs of the form NCC)
-    4. A spacer sequence with PAM in DNA form (same as 3., but in DNA format)
-    5. A guide sequence (35 base-pair RNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
-        6 bp downstream)
-    6. A guide sequence in DNA form (same as 3., but in DNA format (NOT  complementary DNA, just U -> T substitutions))
-    Returns True if the given sequence is any of the above and false otherwise."""
-    if not isinstance(inputSequence, str):
-        return False
-    elif isValidRNA(inputSequence) or isValidDNA(inputSequence):
-        if isValidRNA(inputSequence):
-            if len(inputSequence) == 20:
-                return True
-            elif len(inputSequence) == 23:
-                return inputSequence[21:23] == "CC"
-            else:
-                return isValidGuideSequence(inputSequence)
-        else:
-            if len(inputSequence) == 20:
-                return True
-            elif len(inputSequence) == 23:
-                return complementaryRNA(complementaryRNA(inputSequence))[21:23] == "CC"
-            else:
-                return isValidGuideSequence(complementaryRNA(complementaryRNA(inputSequence)))
-
-    else:
-        return False
-
-
-def isValidTargetInput(inputSequence):
-    """Method that returns whether a given sequence is a valid string representing any of the following:
-    1. A target sequence (20 base-pair DNA sequence that will bind to the spacer sequence)
-    2. A spacer sequence with PAM (same as 1., but with an additional 3 RNA base-pairs of the form NGG)
-    3. A target guide sequence (35 base-pair DNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
+    1. A target sequence (20 base-pair DNA sequence resembling the spacer sequence)
+    2. A spacer sequence (20 base-pair RNA sequence resembling the target sequence)
+    3. A target sequence with PAM (same as 1., but with an additional 3 DNA base-pairs of the form NGG)
+    4. A spacer sequence with PAM (same as 2., but with an additional 3 DNA base-pairs of the form NGG)
+    5. A target guide sequence (35 base-pair DNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
     6 bp downstream)
-    Returns True if the
-    given sequence is any of the above and false otherwise. """
-    if not isinstance(inputSequence, str):
-        return False
-    elif isValidDNA(inputSequence):
+    6. A guide sequence (35 base-pair RNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
+        6 bp downstream); this sequence does not physically exist anywhere but is still accepted as valid input
+    Returns True if the given sequence is any of the above and False otherwise."""
+    if isValidDNA(inputSequence) or isValidRNA(inputSequence):
         if len(inputSequence) == 20:
             return True
         elif len(inputSequence) == 23:
-            return complementaryRNA(complementaryRNA(inputSequence))[21:23] == "GG"
-        else:
-            return isValidGuideSequence(complementaryRNA(inputSequence))
-
-    else:
-        return False
+            return inputSequence[21:23] == "GG"
+        elif len(inputSequence) == 35:
+            return inputSequence[27:29] == "GG"
+    return False
 
 
 def complementaryRNA(sequence):

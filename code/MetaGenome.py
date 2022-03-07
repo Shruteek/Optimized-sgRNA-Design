@@ -56,13 +56,13 @@ class MetaGenome:
         """Method that takes an input String RNA spacerSequence and uses the findTargetsFromSpacer method of each
         Sequence in __Sequences, compiles them, and returns."""
         nestedOffTargets = []
-        if not len(spacerSequence) == 20:
-            # print("Warning: given spacerSequence is not 20 nucleotides long: " + spacerSequence)
+        if not (len(spacerSequence) == 20 and isValidRNA(spacerSequence)):
             nestedOffTargets = []
-        for sequence in self.__Sequences:
-            offTargets = sequence.findTargetsFromSpacer(spacerSequence)
-            for offTarget in offTargets:
-                nestedOffTargets.append(offTarget)
+        else:
+            for sequence in self.__Sequences:
+                offTargets = sequence.findTargetsFromSpacer(spacerSequence)
+                for offTarget in offTargets:
+                    nestedOffTargets.append(offTarget)
         return nestedOffTargets
 
     def addSequences(self, sequencesFile):

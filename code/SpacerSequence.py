@@ -1,6 +1,7 @@
 import math
 from GenomeTools import *
 from MetaGenome import MetaGenome
+import time
 
 
 class SpacerSequence:
@@ -73,11 +74,11 @@ class SpacerSequence:
                              [5, 5, -1, -1, -1, -1, -1]]
 
     def __init__(self, spacerOrTargetSequence, genome):
-        """Initialization method that takes in a 35 bp DNA target guide sequence, a 23 bp DNA target sequence + PAM,
-        or a 20 bp DNA target sequence, plus an associated metaGenome class file and instantiates, checking to ensure
-        the guideSequence is in the proper format (6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream),
-        as well as that given genome is a MetaGenome, trying to complete the guideSequence using the genome
-        otherwise. """
+        """Initialization method that takes in (1) a 35 bp DNA guide/target guide sequence, a 23 bp DNA spacer/target
+        sequence + PAM, or a 20 bp DNA spacer/target sequence, and (2) an associated metaGenome class file, and
+        instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
+        sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
+        guideSequence using the genome otherwise. """
         self.__onTargetSequences = []  # List of length A with strings of length 35
         self.__onTargetScores = []  # List of length A with doubles
         self.__offTargetSequences = []  # List of length B with strings of length 35
@@ -86,13 +87,17 @@ class SpacerSequence:
         self.__offTargetScores = []  # List of length A with lists of length B with doubles
         if not isinstance(genome, MetaGenome):
             return
+        if not isValidTargetSpacerInput(spacerOrTargetSequence):
+            return
         if len(spacerOrTargetSequence) == 20:
             self.__spacerSequence = convertToRNA(spacerOrTargetSequence)
         elif len(spacerOrTargetSequence) == 23:
             self.__spacerSequence = convertToRNA(spacerOrTargetSequence[0:20])
-        else:
-            self.__spacerSequence = "ACUGACUGACUGACUGACUG"
+        elif len(spacerOrTargetSequence) == 35:
+            self.__spacerSequence = convertToRNA(spacerOrTargetSequence[6:26])
+        startTime = time.time()
         targetSequences = genome.findTargetsFromSpacer(self.__spacerSequence)
+        print("Find target sequences runtime (seconds): " + str(time.time() - startTime))
         for targetSequence in targetSequences:
             if targetSequence[6:26] == convertToDNA(self.__spacerSequence):
                 self.__onTargetSequences.append(targetSequence)
