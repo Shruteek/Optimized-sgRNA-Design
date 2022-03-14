@@ -195,22 +195,6 @@ def findTargetsFromSpacer(spacerSequence, substrateSequence, mismatchStrictness)
         return offTargets
 
 
-def crossCorrelateSequences(targetSequence, substrateSequence):
-    """Takes in a 20 bp DNA string targetSequence and an arbitrary length DNA string substrateSequence, cross-correlates
-    targetSequence by shifting it along substrateSequence, and returns the results. Correlates the 20 bp ideal target
-    sequence with the 20 bp in the middle of every potential 35 bp target guide sequence on substrateSequence, and
-    returns the numerical correlation results as a list of integers, with each correlation result between 20 bp
-    targetSequence and substrate 35 bp subsequence being stored at the cross-correlation shift index of the list.
-    Records 0 for any 35 bp region without a PAM."""
-    crosscorrelation = []
-    for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
-        correlation = 0
-        if substrateSequence[(shift + 27):(shift + 29)] == "GG":
-            correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
-        crosscorrelation.append(correlation)
-    return crosscorrelation
-
-
 def crossCorrelateSequencesEfficiently(targetSequence, substrateSequence):
     """Takes in a 20 bp DNA string targetSequence and an arbitrary length DNA string substrateSequence,
     cross-correlates targetSequence by shifting it along substrateSequence, and returns the results. Correlates the
@@ -231,6 +215,22 @@ def crossCorrelateSequencesEfficiently(targetSequence, substrateSequence):
                                              substrateSequence[(shift + 6):(shift + 6 + PAMAdjacentLength)])
             if correlation >= PAMAdjacentLength - PAMMismatchStrictness:
                 correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
+        crosscorrelation.append(correlation)
+    return crosscorrelation
+
+
+def crossCorrelateSequences(targetSequence, substrateSequence):
+    """Takes in a 20 bp DNA string targetSequence and an arbitrary length DNA string substrateSequence, cross-correlates
+    targetSequence by shifting it along substrateSequence, and returns the results. Correlates the 20 bp ideal target
+    sequence with the 20 bp in the middle of every potential 35 bp target guide sequence on substrateSequence, and
+    returns the numerical correlation results as a list of integers, with each correlation result between 20 bp
+    targetSequence and substrate 35 bp subsequence being stored at the cross-correlation shift index of the list.
+    Records 0 for any 35 bp region without a PAM."""
+    crosscorrelation = []
+    for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
+        correlation = 0
+        if substrateSequence[(shift + 27):(shift + 29)] == "GG":
+            correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
         crosscorrelation.append(correlation)
     return crosscorrelation
 
