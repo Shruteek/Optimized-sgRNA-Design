@@ -1,0 +1,5 @@
+INFO: Command: /global/scratch/projects/fc_pickeringlab/miniconda3/envs/bowtie/bin/bowtie-align-l --wrapper basic-0 -a -v 2 101_R1_illumina_index --suppress 1,5,6,7 bowtie_test_guides.fastq
+# reads processed: 7
+# reads with at least one reported alignment: 3 (42.86%)
+# reads that failed to align: 4 (57.14%)
+Reported 44 alignments to 1 output stream(s)

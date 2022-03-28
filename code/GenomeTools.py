@@ -298,11 +298,11 @@ def appendSpacerToData(data, spacer):
                              spacer.getOffTargetEstimates()[targetSequenceIndex],
                              spacer.getOffTargetCounts()[targetSequenceIndex], "", ""])
         else:
-            data.append(["Spacer (20 bp RNA)", "On-Target Sequence (35 bp DNA)", "On-Target Heuristic",
+            data.append(["On-Target + PAM (23 bp DNA)", "On-Target Sequence (35 bp DNA)", "On-Target Heuristic",
                          "On-Target Score", "", ""])
-            data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
             for guideSequenceIndex in range(len(spacer.getOnTargetSequences())):
-                data.append(["", complementaryDNA(spacer.getOnTargetSequences()[guideSequenceIndex]),
+                data.append([spacer.getOnTargetSequences()[guideSequenceIndex][6:29], "", "", "", "", ""])
+                data.append(["", spacer.getOnTargetSequences()[guideSequenceIndex],
                              spacer.getHeuristics()[guideSequenceIndex],
                              spacer.getOnTargetScores()[guideSequenceIndex], "", ""])
             data.append(["Spacer (20 bp RNA)", "Off-Target Sequence (35 bp DNA)", "Off-Target Score",

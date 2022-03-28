@@ -1,0 +1,3 @@
+/var/spool/slurmd/job11669904/slurm_script: line 19: import: command not found
+/var/spool/slurmd/job11669904/slurm_script: line 21: syntax error near unexpected token `startTime'
+/var/spool/slurmd/job11669904/slurm_script: line 21: `startTime = time.time()'
