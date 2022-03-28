@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=analyze_tet_A
 #SBATCH -J download
-#SBATCH --time=72:00:00
+#SBATCH --time=1:00:00
 #SBATCH --account=fc_pickeringlab
 #SBATCH -p savio2_htc
 #SBATCH --ntasks=4
