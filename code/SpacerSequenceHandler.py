@@ -6,6 +6,15 @@ from SpacerSequence import SpacerSequence
 import time
 
 
+def __fileSetup():
+    """Checks if folders to be used in program exist, and if not, sets them up."""
+    outputPath = "OptimizedsgRNAOutputs"
+    outputPath = os.path.join(os.getcwd(), outputPath)
+    if not os.path.isdir(outputPath):
+        os.mkdir(outputPath)
+
+
+
 def __queryForMetagenomeFile():
     """Repeatedly queries the user for a string filepath, validates each filepath input, takes the first valid filepath,
      and returns its corresponding MetaGenome object."""
@@ -356,6 +365,9 @@ def __runSTI(arguments):
                     saveFile.close()
                     os.remove(arguments[4])
                     print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+                    print(data)
+            else:
+                print(data)
 
 
 # def __runMSI(arguments):
@@ -460,13 +472,16 @@ def __runMTI(arguments):
                     saveFile.close()
                     os.remove(arguments[4])
                     print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+                    print(data)
                 print("File save runtime (seconds): " + str(time.time() - subStartTime))
-            print(data)
+            else:
+                print(data)
 
 
 if __name__ == '__main__':
     """Handles SeedSequence.py, accepting inputs and outputs to the class and returning the result of on-target and 
     off-target calculations and heuristics."""
+    __fileSetup()
     if len(sys.argv) == 1:
         __runNoInput()
     elif len(sys.argv) >= 2:

@@ -1,6 +1,8 @@
 from Bio import SeqIO
 from GenomeTools import *
 from Sequence import Sequence
+import os
+import pysam
 
 
 class MetaGenome:
@@ -8,6 +10,7 @@ class MetaGenome:
     def __init__(self, metaGenomePath, name="Generic MetaGenome"):
         """Initialization method that takes in the local .FASTA filename of a metaGenome (and, optionally, a name for that
             metagenome) and instantiates."""
+        self.__OriginalPath = metaGenomePath
         self.__Name = name
         self.__Sequences = []
         if not isValidFasta(metaGenomePath):
@@ -51,6 +54,37 @@ class MetaGenome:
         else:
             # print("Invalid sequence key: must be int (index) or str (subsequence).")
             return []
+
+    def getOriginalPath(self):
+        """Returns the original path of the metagenome file as a string."""
+        return self.__OriginalPath
+
+    def bowtieFindTargetsFromSpacer(self, spacerSequence):
+        """Method that takes an input 23 bp String RNA spacerSequence and uses bowtie to run alignment analysis on it with
+        respect to the metagenome. Specified flags include: -a (include all alignments), -v 5 (limit to maximum of 5
+        mismatches), -n 1 (limit to maximum of 1 mismatch in seed sequence), -l 10 (assume seed sequence is 10 base pairs), -c <SpacerSequence> (take direct sequence input rather than file), -B"""
+
+        foundTargets = []
+        if not (len(spacerSequence) == 23 and isValidRNA(spacerSequence)):
+            return foundTargets
+        else:
+            originalPath = os.path.join(os.getcwd(), self.__OriginalPath)
+            indexName = os.path.splitext(os.path.basename(self.__OriginalPath))[0]
+            outputPath = os.path.join(os.getcwd(), "OptimizedsgRNAOutputs", os.path.splitext(os.path.basename(self.__OriginalPath))[0] + ".sam")
+            if (not os.path.exists(indexName + ".rev.2.ebwt")) and (not os.path.exists(indexName + ".rev.2.ebwtl")):
+                os.system("bowtie-build " + originalPath + " " + indexName)
+            os.system("bowtie -a -v 5 " + indexName + " " + spacerSequence + " -S " + outputPath)
+            fastaFile = pysam.FastaFile(originalPath)
+            alignmentFile = pysam.AlignmentFile(outputPath)
+            for alignedSegment in alignmentFile.head(10000):
+                if alignedSegment.is_mapped and alignedSegment.cigarstring.equals("23M"):
+                    referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
+                    for alignedBlock in alignedSegment.get_blocks():
+                        if alignedBlock[0] >= 6 and alignedBlock[1] <= len(referenceSequence) - 6 and referenceSequence[alignedBlock[1] - 3:alignedBlock[1]] == spacerSequence[-3:]:
+                            fullTargetSequence = referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6]
+                            foundTargets.append(fullTargetSequence)
+
+        return foundTargets
 
     def findTargetsFromSpacer(self, spacerSequence):
         """Method that takes an input String RNA spacerSequence and uses the findTargetsFromSpacer method of each

@@ -2,6 +2,7 @@ import math
 from GenomeTools import *
 from MetaGenome import MetaGenome
 import time
+import os
 
 
 class SpacerSequence:
@@ -79,7 +80,7 @@ class SpacerSequence:
         instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
         sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
         guideSequence using the genome otherwise. """
-        self.__spacerSequence = ""  # String of intended length 20
+        self.__spacerSequence = ""  # String of intended length 23
         self.__onTargetSequences = []  # List of length A with strings of length 35
         self.__onTargetScores = []  # List of length A with doubles
         self.__offTargetSequences = []  # List of length B with strings of length 35
@@ -91,16 +92,16 @@ class SpacerSequence:
         if not isValidTargetSpacerInput(spacerOrTargetSequence):
             return
         if len(spacerOrTargetSequence) == 20:
-            self.__spacerSequence = convertToRNA(spacerOrTargetSequence)
+            self.__spacerSequence = convertToRNA(spacerOrTargetSequence) + "GGG"
         elif len(spacerOrTargetSequence) == 23:
-            self.__spacerSequence = convertToRNA(spacerOrTargetSequence[0:20])
+            self.__spacerSequence = convertToRNA(spacerOrTargetSequence)
         elif len(spacerOrTargetSequence) == 35:
-            self.__spacerSequence = convertToRNA(spacerOrTargetSequence[6:26])
+            self.__spacerSequence = convertToRNA(spacerOrTargetSequence[6:29])
         startTime = time.time()
         targetSequences = genome.findTargetsFromSpacer(self.__spacerSequence)
         print("Find target sequences runtime (seconds): " + str(time.time() - startTime))
         for targetSequence in targetSequences:
-            if targetSequence[6:26] == convertToDNA(self.__spacerSequence):
+            if targetSequence[6:29] == convertToDNA(self.__spacerSequence):
                 self.__onTargetSequences.append(targetSequence)
             elif targetSequence in self.__offTargetSequences:
                 duplicateTargetIndex = self.__offTargetSequences.index(targetSequence)
@@ -222,7 +223,7 @@ class SpacerSequence:
         return heuristics
 
     def getSpacerSequence(self):
-        """Method that returns the 20 bp string RNA spacer sequence of the instance."""
+        """Method that returns the 23 bp string RNA spacer sequence (including PAM) of the instance."""
         return self.__spacerSequence
 
     def getOnTargetSequences(self):

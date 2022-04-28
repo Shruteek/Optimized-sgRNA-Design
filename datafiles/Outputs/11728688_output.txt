@@ -1,0 +1,25 @@
+Settings:
+  Output files: "101_R1_illumina_2.*.ebwtl"
+  Line rate: 7 (line is 128 bytes)
+  Lines per side: 1 (side is 128 bytes)
+  Offset rate: 5 (one in 32)
+  FTable chars: 10
+  Strings: unpacked
+  Max bucket size: default
+  Max bucket size, sqrt multiplier: default
+  Max bucket size, len divisor: 4
+  Difference-cover sample period: 1024
+  Endianness: little
+  Actual local endianness: little
+  Sanity checking: disabled
+  Assertions: disabled
+  Random seed: 0
+  Sizeofs: void*:8, int:4, long:8, size_t:8
+Input files DNA, FASTA:
+  101_R1_illumina.fasta
+Reading reference sizes
+  Time reading reference sizes: 00:00:37
+Calculating joined length
+Writing header
+Reserving space for joined string
+Joining reference sequences

@@ -1,0 +1,40 @@
+Settings:
+  Output files: "pf3_R1_illumina.*.ebwtl"
+  Line rate: 7 (line is 128 bytes)
+  Lines per side: 1 (side is 128 bytes)
+  Offset rate: 5 (one in 32)
+  FTable chars: 10
+  Strings: unpacked
+  Max bucket size: default
+  Max bucket size, sqrt multiplier: default
+  Max bucket size, len divisor: 4
+  Difference-cover sample period: 1024
+  Endianness: little
+  Actual local endianness: little
+  Sanity checking: disabled
+  Assertions: disabled
+  Random seed: 0
+  Sizeofs: void*:8, int:4, long:8, size_t:8
+Input files DNA, FASTA:
+  pf3_R1_illumina_full.fasta
+Reading reference sizes
+  Time reading reference sizes: 00:00:46
+Calculating joined length
+Writing header
+Reserving space for joined string
+Joining reference sequences
+  Time to join reference sequences: 00:01:17
+bmax according to bmaxDivN setting: 1510427083
+Using parameters --bmax 1132820313 --dcv 1024
+  Doing ahead-of-time memory usage test
+  Passed!  Constructing with these parameters: --bmax 1132820313 --dcv 1024
+Constructing suffix-array element generator
+Building DifferenceCoverSample
+  Building sPrime
+  Building sPrimeOrder
+  V-Sorting samples
+  V-Sorting samples time: 00:01:45
+  Allocating rank array
+  Ranking v-sort output
+  Ranking v-sort output time: 00:00:30
+  Invoking Larsson-Sadakane on ranks
