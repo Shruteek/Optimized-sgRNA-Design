@@ -63,7 +63,6 @@ class MetaGenome:
         """Method that takes an input 23 bp String RNA spacerSequence and uses bowtie to run alignment analysis on it with
         respect to the metagenome. Specified flags include: -a (include all alignments), -v 5 (limit to maximum of 5
         mismatches), -n 1 (limit to maximum of 1 mismatch in seed sequence), -l 10 (assume seed sequence is 10 base pairs), -c <SpacerSequence> (take direct sequence input rather than file), -B"""
-
         foundTargets = []
         if not (len(spacerSequence) == 23 and isValidRNA(spacerSequence)):
             return foundTargets
@@ -83,7 +82,6 @@ class MetaGenome:
                         if alignedBlock[0] >= 6 and alignedBlock[1] <= len(referenceSequence) - 6 and referenceSequence[alignedBlock[1] - 3:alignedBlock[1]] == spacerSequence[-3:]:
                             fullTargetSequence = referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6]
                             foundTargets.append(fullTargetSequence)
-
         return foundTargets
 
     def findTargetsFromSpacer(self, spacerSequence):

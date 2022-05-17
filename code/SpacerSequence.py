@@ -98,7 +98,7 @@ class SpacerSequence:
         elif len(spacerOrTargetSequence) == 35:
             self.__spacerSequence = convertToRNA(spacerOrTargetSequence[6:29])
         startTime = time.time()
-        targetSequences = genome.findTargetsFromSpacer(self.__spacerSequence)
+        targetSequences = genome.bowtieFindTargetsFromSpacer(self.__spacerSequence)
         print("Find target sequences runtime (seconds): " + str(time.time() - startTime))
         for targetSequence in targetSequences:
             if targetSequence[6:29] == convertToDNA(self.__spacerSequence):
