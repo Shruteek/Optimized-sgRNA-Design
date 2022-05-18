@@ -10,7 +10,7 @@ class MetaGenome:
     def __init__(self, metaGenomePath, name="Generic MetaGenome"):
         """Initialization method that takes in the local .FASTA filename of a metaGenome (and, optionally, a name for that
             metagenome) and instantiates."""
-        self.__OriginalPath = os.path.join(os.getcwd(), os.path.basename(metaGenomePath))
+        self.__OriginalPath = os.path.abspath(metaGenomePath)
         self.__Name = name
         self.__Sequences = []
         if not isValidFasta(metaGenomePath):
