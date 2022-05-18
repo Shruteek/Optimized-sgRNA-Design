@@ -10,7 +10,7 @@ class MetaGenome:
     def __init__(self, metaGenomePath, name="Generic MetaGenome"):
         """Initialization method that takes in the local .FASTA filename of a metaGenome (and, optionally, a name for that
             metagenome) and instantiates."""
-        self.__OriginalPath = metaGenomePath
+        self.__OriginalPath = os.path.join(os.getcwd(), os.path.basename(metaGenomePath))
         self.__Name = name
         self.__Sequences = []
         if not isValidFasta(metaGenomePath):
@@ -67,16 +67,24 @@ class MetaGenome:
         if not (len(spacerSequence) == 23 and isValidRNA(spacerSequence)):
             return foundTargets
         else:
-            print("Current path: " + os.getcwd())
-            originalPath = os.path.join(os.getcwd(), self.__OriginalPath)
+            print("Current terminal path: " + os.getcwd())
+            print("Original metagenome path: " + self.__OriginalPath)
             indexName = os.path.splitext(os.path.basename(self.__OriginalPath))[0]
-            projectPath = os.path.dirname(os.path.realpath(__file__))
+            print("Metagenome index name: " + indexName)
+            projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+            print("Overall project repo path: " + projectPath)
             outputPath = os.path.join(projectPath, "Outputs")
+            print("Outputs folder path: " + outputPath)
             if (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt"))) and (os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl"))):
-                os.system("bowtie-build " + originalPath + " " + os.path.join(outputPath, indexName))
-            os.system("bowtie -a -v 3 " + os.path.join(outputPath, indexName) + " -c " + spacerSequence + " -S " + os.path.join(outputPath, indexName + ".sam"))
-            fastaFile = pysam.FastaFile(originalPath)
-            alignmentFile = pysam.AlignmentFile(outputPath)
+                print(os.path.join(outputPath, indexName) + " index does not exist. Building...")
+                os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath, indexName))
+                if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")) or os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
+                    print("Successfully built.")
+                else:
+                    print("Unsuccessful build.")
+            os.system("bowtie -a -v 3 " + os.path.join(outputPath, indexName) + " -c " + spacerSequence + " -S " + os.path.join(outputPath, indexName + spacerSequence + ".sam"))
+            fastaFile = pysam.FastaFile(self.__OriginalPath)
+            alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + spacerSequence + ".sam"))
             for alignedSegment in alignmentFile.head(10000):
                 if alignedSegment.is_mapped and alignedSegment.cigarstring.equals("23M"):
                     referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
