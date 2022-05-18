@@ -1,21 +1,21 @@
 import csv
 import re
-from os.path import exists
+import os
 
 
 def isValidFasta(FASTAFile):
     """Takes in a string filename and returns whether the given path points to an existing FASTA file."""
-    return isinstance(FASTAFile, str) and exists(FASTAFile)
+    return os.path.exists(FASTAFile) and str.lower(os.path.splitext(FASTAFile)[1]) == ".fasta"
 
 
 def isValidCSV(CSVFile):
     """Takes in a string filename and returns whether the given path points to an existing CSV."""
-    return isinstance(CSVFile, str) and len(CSVFile) > 4 and str.lower(CSVFile[-4:]) == ".csv" and exists(CSVFile)
+    return os.path.exists(CSVFile) and str.lower(os.path.splitext(CSVFile)[1]) == ".csv"
 
 
 def isValidTSV(TSVFile):
     """Takes in a string filename and returns whether the given path points to an existing TSV."""
-    return isinstance(TSVFile, str) and len(TSVFile) > 4 and str.lower(TSVFile[-4:]) == ".tsv" and exists(TSVFile)
+    return os.path.exists(TSVFile) and str.lower(os.path.splitext(TSVFile)[1]) == ".tsv"
 
 
 def isValidDNA(DNASequence):
