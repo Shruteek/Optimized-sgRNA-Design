@@ -75,7 +75,7 @@ class MetaGenome:
             print("Overall project repo path: " + projectPath)
             outputPath = os.path.join(projectPath, "Outputs")
             print("Outputs folder path: " + outputPath)
-            if (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt"))) and (os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl"))):
+            if (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt"))) and (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl"))):
                 print(os.path.join(outputPath, indexName) + " index does not exist. Building...")
                 os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath, indexName))
                 if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")) or os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
