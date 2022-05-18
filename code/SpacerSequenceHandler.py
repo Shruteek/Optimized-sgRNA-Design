@@ -8,10 +8,14 @@ import time
 
 def __fileSetup():
     """Checks if folders to be used in program exist, and if not, sets them up."""
-    outputPath = "OptimizedsgRNAOutputs"
-    outputPath = os.path.join(os.getcwd(), outputPath)
+    projectPath = os.path.dirname(os.path.realpath(__file__))
+    outputPath = os.path.join(projectPath, "Outputs")
+    dataPath = os.path.join(projectPath, "Genedata")
     if not os.path.isdir(outputPath):
         os.mkdir(outputPath)
+    if not os.path.isdir(dataPath):
+        os.mkdir(dataPath)
+
 
 
 

@@ -67,12 +67,14 @@ class MetaGenome:
         if not (len(spacerSequence) == 23 and isValidRNA(spacerSequence)):
             return foundTargets
         else:
+            print("Current path: " + os.getcwd())
             originalPath = os.path.join(os.getcwd(), self.__OriginalPath)
             indexName = os.path.splitext(os.path.basename(self.__OriginalPath))[0]
-            outputPath = os.path.join(os.getcwd(), "OptimizedsgRNAOutputs", os.path.splitext(os.path.basename(self.__OriginalPath))[0] + ".sam")
-            if (not os.path.exists(indexName + ".rev.2.ebwt")) and (not os.path.exists(indexName + ".rev.2.ebwtl")):
-                os.system("bowtie-build " + originalPath + " " + indexName)
-            os.system("bowtie -a -v 5 " + indexName + " " + spacerSequence + " -S " + outputPath)
+            projectPath = os.path.dirname(os.path.realpath(__file__))
+            outputPath = os.path.join(projectPath, "Outputs")
+            if (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt"))) and (os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl"))):
+                os.system("bowtie-build " + originalPath + " " + os.path.join(outputPath, indexName))
+            os.system("bowtie -a -v 3 " + os.path.join(outputPath, indexName) + " -c " + spacerSequence + " -S " + os.path.join(outputPath, indexName + ".sam"))
             fastaFile = pysam.FastaFile(originalPath)
             alignmentFile = pysam.AlignmentFile(outputPath)
             for alignedSegment in alignmentFile.head(10000):
