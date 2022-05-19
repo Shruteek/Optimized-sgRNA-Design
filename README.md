@@ -1,14 +1,15 @@
 # Optimized-sgRNA-Design
 
-![](datafiles/CRISPR-Logo.jpg)
+![](CRISPR-Logo.jpg)
 
-Optimized sgRNA Design README File
+INTRODUCTION
 =====================
 The Optimized sgRNA Design repository is a set of command line software tools for analyzing the on-target and off-target effects of sgRNA spacer inputs developed from the Pickering Lab at UC Berkeley.
 
 This program is still currently under development. Intended functionality is that this program can take in a metagenome consisting of a large number of organisms' genetic data, along with a collection of 20 base pair (no PAM) or 23 base pair (with PAM) CRISPR Cas9 sgRNA sequences, and to output those sgRNA sequences ranked in terms of optimality. This program has the following required dependencies: Python 3.8, pysam, biopython, bowtie.
 
--- INSTALLATION/ENVIRONMENT CREATION
+INSTALLATION/ENVIRONMENT CREATION
+=====================
 This tool will only work on Linux and MacOS due to dependency on bowtie and pysam, neither of which are available on Windows. The steps to install the necessary dependencies for this program are as follows:
 1. Install Python 3 (see http://www.python.org)
 Linux: https://www.python.org/downloads/source/
