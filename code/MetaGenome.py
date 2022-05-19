@@ -78,11 +78,18 @@ class MetaGenome:
             if (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt"))) and (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl"))):
                 print(os.path.join(outputPath, indexName) + " index does not exist. Building...")
                 os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath, indexName))
-                if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")) or os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
-                    print("Successfully built.")
-                else:
-                    print("Unsuccessful build.")
-            os.system("bowtie -a -v 3 " + os.path.join(outputPath, indexName) + " -c " + spacerSequence + " -S " + os.path.join(outputPath, indexName + spacerSequence + ".sam"))
+            if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
+                print("Successfully built.")
+                os.system("bowtie -a -v 3 " + os.path.join(outputPath,
+                                                           indexName) + " -c " + spacerSequence + " -S " + os.path.join(
+                    outputPath, indexName + spacerSequence + ".sam"))
+            elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
+                print("Successfully built.")
+                os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath,
+                                                           indexName) + " -c " + spacerSequence + " -S " + os.path.join(
+                    outputPath, indexName + spacerSequence + ".sam"))
+            else:
+                print("Unsuccessful build.")
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + spacerSequence + ".sam"))
             for alignedSegment in alignmentFile.head(10000):
