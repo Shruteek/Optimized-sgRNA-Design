@@ -2,16 +2,55 @@
 
 ![](datafiles/CRISPR-Logo.jpg)
 
-This is a set of software tools for analyzing the on-target and off-target effects of sgRNA spacer inputs
+Optimized sgRNA Design README File
+=====================
+The Optimized sgRNA Design repository is a set of command line software tools for analyzing the on-target and off-target effects of sgRNA spacer inputs developed from the Pickering Lab at UC Berkeley.
 
-This program is still currently under development. Intended functionality is that this program can take in a metagenome consisting of a large number of organisms' genetic data, along with a collection of 20 base pair (no PAM) or 23 base pair (with PAM) CRISPR Cas9 sgRNA sequences, and to output those sgRNA sequences ranked in terms of optimality. This program has the following required dependencies: Python 3.8, pysam, bowtie.
+This program is still currently under development. Intended functionality is that this program can take in a metagenome consisting of a large number of organisms' genetic data, along with a collection of 20 base pair (no PAM) or 23 base pair (with PAM) CRISPR Cas9 sgRNA sequences, and to output those sgRNA sequences ranked in terms of optimality. This program has the following required dependencies: Python 3.8, pysam, biopython, bowtie.
 
 -- INSTALLATION/ENVIRONMENT CREATION
+This tool will only work on Linux and MacOS due to dependency on bowtie and pysam, neither of which are available on Windows. The steps to install the necessary dependencies for this program are as follows:
+1. Install Python 3 (see http://www.python.org)
+Linux: https://www.python.org/downloads/source/
+MacOS: https://www.python.org/downloads/macos/
+2. Install pip (pip should come with Python, but this should ensure it is present; see https://pip.pypa.io/en/stable/installation/)
+Once you have ensured Python is installed, open your terminal and run:
+    python -m ensurepip --upgrade
+3. Install biopython (see https://biopython.org/)
+Once you have ensured pip is installed, open your terminal and run:
+    pip install biopython
+3. Install pysam (see https://pysam.readthedocs.io/en/latest/)
+Assuming pip is installed, open your terminal and run:
+    pip install pysam
+5. Install conda (rcommend installing Miniconda rather than Anaconda due to size bloat, but both work since they are both just distributions of Conda; see https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+Linux: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
+MacOS: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html
+After installing the miniconda installer for your operating system using one of the links above, open your terminal, navigate to where you downloaded the file, and run one of the following commands. For Linux:
+    bash Miniconda3-latest-Linux-x86_64.sh
+For MacOS:
+    bash Miniconda3-latest-MacOSX-x86_64.sh
+6. Install bowtie
+Finally, after ensuring Conda is installed (either Miniconda or Anaconda), open your terminal and run:
+    conda install bowtie -c bioconda
 
--- TOOL USAGE INFORMATION
+You are done! If all above packages are succesfully installed, you should now be able to run the tool.
 
--- TOOL USAGE EXAMPLES
+TOOL USAGE INFORMATION
+=====================
+This program takes in 1. A single sgRNA sequence or multiple sgRNA sequences, 2. A genome/metagenome file, and 3. An output file, and returns compiled data on the possible sites each sgRNA sequence could bind to in the given genome/metagenome, classifying perfect matches as "on-target sites" and imperfect matches as "off-target sites." The program can be run in single-target mode (STI, for a single sgRNA input) or multi-target mode (MTI, for multiple sgRNA inputs). Further details on each input are below:
+1. The sgRNA sequences are always 20 base pairs (the spacer sequence) or 23 base pairs (the spacer sequence + PAM) and can be either DNA or RNA. In single-target mode (STI), the sgRNA sequence is written as a string to the command line. In multi-target mode (MTI), the sgRNA sequences are given in the form of a compiled .CSV or .TSV file.
+2. The genome/metagenome can be any size and contain any number of individual sequences; this is what the sgRNA sequence(s) will be aligned against. The genome/metagenome is always given as a .FASTA file.
+3. The output file is optional, but if given, should be a .CSV or .TSV file path. If the file already exists, it will be overwritten. The output will have 2 sections for each sgRNA sequence; the first, the on-target section, will have columns taking the form [On-Target + PAM (23 bp RNA), On-Target Sequence (35  bp DNA), On-Target Heuristic, On-Target Score], which lists each on-target for a given sgRNA sequence and gives a score evaluating how well the sgRNA would bind to it in isolation and a heuristic evaluating the same thing when considering the number of off-targets. The second section, the off-target section, will have columns taking the form [On-Target + PAM (23 bp RNA), Off-Target Sequence (35 bp DNA), Off-Target Score, Off-Target Count], which lists each off-target for a given sgRNA sequence and gives a score evaluating how well the sgRNA would bind to it in isolation as well as a counter for the number of times that off-target appears in the genome.
 
--- OUTPUT EXPLANATION
 
-This program can be run in multi target input mode or single target input mode. In multi target input mode, the program can take a .TSV or .CSV file path representing the file from which the DNA string target sequences will be read; these strings can be 20 base pairs (just the targets), 23 base pairs (the targets + NGG PAMs), and in RNA or DNA format (though currently, no generic 'N' nucleotide functionality). The program also takes in a .FASTA file path representing the metaGenome with which the target sequences are to be found and analyzed, and (optionally) a .CSV or .TSV file path representing the file to which the target analysis data should be written (**if the save file already exists, its contents will not be appended to**). Each target analysis row will take the form:\n[Spacer (20 bp RNA), Target Guide Sequence (35 bp DNA), Off-Target Sequences (35 bp DNA), On-Target Score, Off-Target Scores, Heuristic]
+TOOL USAGE EXAMPLES
+=====================
+This program can be run with either of the below input schemes:
+Single target input: The program takes in a string representing an RNA spacer or DNA target and a .FASTA file path and saves the target analysis data to the saveFile path. Example:
+	 python SpacerSequenceHandler.PY STI TGACTGACTGACTGACTGAC metaGenome.FASTA saveFile.CSV
+Multi target input: The program takes in a .CSV or .TSV file path containing spacer/target sequences and a .FASTA file path and saves a list of target analysis data to the saveFile path. Example:
+	 python SpacerSequenceHandler.PY MTI targetSequences.CSV metaGenome.FASTA saveFile.CSV
+Help: Print out this help message or a more detailed help message. Examples:
+	python SpacerSequenceHandler.py help
+	python SpacerSequenceHandler.py help single-target-input
+	python SpacerSequenceHandler.py help multi-target-input
