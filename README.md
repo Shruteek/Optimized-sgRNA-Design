@@ -12,27 +12,37 @@ INSTALLATION/ENVIRONMENT CREATION
 =====================
 This tool will only work on Linux and MacOS due to dependency on bowtie and pysam, neither of which are available on Windows. The steps to install the necessary dependencies for this program are as follows:
 1. Install Python 3 (see http://www.python.org)
+
 Linux: https://www.python.org/downloads/source/
 MacOS: https://www.python.org/downloads/macos/
 2. Install pip (pip should come with Python, but this should ensure it is present; see https://pip.pypa.io/en/stable/installation/)
+
 Once you have ensured Python is installed, open your terminal and run:
-    python -m ensurepip --upgrade
+```python -m ensurepip --upgrade```
 3. Install biopython (see https://biopython.org/)
+
 Once you have ensured pip is installed, open your terminal and run:
-    pip install biopython
+```pip install biopython```
+
 3. Install pysam (see https://pysam.readthedocs.io/en/latest/)
+
 Assuming pip is installed, open your terminal and run:
-    pip install pysam
+```pip install pysam```
 5. Install conda (rcommend installing Miniconda rather than Anaconda due to size bloat, but both work since they are both just distributions of Conda; see https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+
 Linux: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
+
 MacOS: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html
+
 After installing the miniconda installer for your operating system using one of the links above, open your terminal, navigate to where you downloaded the file, and run one of the following commands. For Linux:
-    bash Miniconda3-latest-Linux-x86_64.sh
+```bash Miniconda3-latest-Linux-x86_64.sh```
+
 For MacOS:
-    bash Miniconda3-latest-MacOSX-x86_64.sh
+```bash Miniconda3-latest-MacOSX-x86_64.sh```
 6. Install bowtie
+
 Finally, after ensuring Conda is installed (either Miniconda or Anaconda), open your terminal and run:
-    conda install bowtie -c bioconda
+```conda install bowtie -c bioconda```
 
 You are done! If all above packages are succesfully installed, you should now be able to run the tool.
 
@@ -47,11 +57,14 @@ This program takes in 1. A single sgRNA sequence or multiple sgRNA sequences, 2.
 TOOL USAGE EXAMPLES
 =====================
 This program can be run with either of the below input schemes:
+
 Single target input: The program takes in a string representing an RNA spacer or DNA target and a .FASTA file path and saves the target analysis data to the saveFile path. Example:
-	 python SpacerSequenceHandler.PY STI TGACTGACTGACTGACTGAC metaGenome.FASTA saveFile.CSV
+```python SpacerSequenceHandler.PY STI TGACTGACTGACTGACTGAC metaGenome.FASTA saveFile.CSV```
+
 Multi target input: The program takes in a .CSV or .TSV file path containing spacer/target sequences and a .FASTA file path and saves a list of target analysis data to the saveFile path. Example:
-	 python SpacerSequenceHandler.PY MTI targetSequences.CSV metaGenome.FASTA saveFile.CSV
-Help: Print out this help message or a more detailed help message. Examples:
-	python SpacerSequenceHandler.py help
-	python SpacerSequenceHandler.py help single-target-input
-	python SpacerSequenceHandler.py help multi-target-input
+```python SpacerSequenceHandler.PY MTI targetSequences.CSV metaGenome.FASTA saveFile.CSV```
+
+Help: Print out a general or more detailed help message. Examples:
+```python SpacerSequenceHandler.py help```
+```python SpacerSequenceHandler.py help single-target-input```
+```python SpacerSequenceHandler.py help multi-target-input```
