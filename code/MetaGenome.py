@@ -67,29 +67,24 @@ class MetaGenome:
         if not (len(spacerSequence) == 23 and isValidRNA(spacerSequence)):
             return foundTargets
         else:
-            print("Current terminal path: " + os.getcwd())
-            print("Original metagenome path: " + self.__OriginalPath)
             indexName = os.path.splitext(os.path.basename(self.__OriginalPath))[0]
-            print("Metagenome index name: " + indexName)
             projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-            print("Overall project repo path: " + projectPath)
             outputPath = os.path.join(projectPath, "Outputs")
-            print("Outputs folder path: " + outputPath)
             if (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt"))) and (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl"))):
-                print(os.path.join(outputPath, indexName) + " index does not exist. Building...")
-                os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath, indexName))
-            if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
-                print("Successfully built.")
-                os.system("bowtie -a -v 3 " + os.path.join(outputPath,
-                                                           indexName) + " -c " + spacerSequence + " -S " + os.path.join(
-                    outputPath, indexName + spacerSequence + ".sam"))
-            elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
-                print("Successfully built.")
-                os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath,
-                                                           indexName) + " -c " + spacerSequence + " -S " + os.path.join(
-                    outputPath, indexName + spacerSequence + ".sam"))
+                print("Index " + indexName + " does not exist. Building...")
+                os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath, indexName) + " > /dev/null")
+                if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
+                    os.system("bowtie -a -v 3 " + os.path.join(outputPath,
+                                                               indexName) + " -c " + spacerSequence + " -S " + os.path.join(
+                        outputPath, indexName + spacerSequence + ".sam > /dev/null"))
+                elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
+                    os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath,
+                                                                             indexName) + " -c " + spacerSequence + " -S " + os.path.join(
+                        outputPath, indexName + spacerSequence + ".sam > /dev/null"))
+                else:
+                    print("Failed to find and to build index.")
             else:
-                print("Unsuccessful build.")
+                print("Index " + indexName + " already exists. Using existing index...")
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + spacerSequence + ".sam"))
             for alignedSegment in alignmentFile.head(10000):

@@ -446,7 +446,7 @@ def __runMTI(arguments):
             data = []
             subStartTime = time.time()
             metaGen = MetaGenome(arguments[3])
-            print("Metagenome loading runtime (seconds): " + str(time.time() - subStartTime))
+            # print("Metagenome loading runtime (seconds): " + str(time.time() - subStartTime))
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
             else:
@@ -458,9 +458,11 @@ def __runMTI(arguments):
                         print("Analyzing given target sequence: " + entry)
                         subStartTime2 = time.time()
                         spacerSequenceEntry = SpacerSequence(entry, metaGen)
-                        print("Sequence analysis runtime (seconds): " + str(time.time() - subStartTime2))
+                        print("Found " + str(len(spacerSequenceEntry.getOnTargetSequences())) + " on-targets and "
+                              + str(len(spacerSequenceEntry.getOffTargetSequences())) + " off-targets.")
+                        # print("Sequence analysis runtime (seconds): " + str(time.time() - subStartTime2))
                         appendSpacerToData(data, spacerSequenceEntry)
-            print("Target analysis and data compilation runtime (seconds): " + str(time.time() - subStartTime))
+            # print("Target analysis and data compilation runtime (seconds): " + str(time.time() - subStartTime))
             if len(arguments) == 5:
                 subStartTime = time.time()
                 saveFile = open(arguments[4], "a+")
@@ -477,7 +479,7 @@ def __runMTI(arguments):
                     os.remove(arguments[4])
                     print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
                     print(data)
-                print("File save runtime (seconds): " + str(time.time() - subStartTime))
+                # print("File save runtime (seconds): " + str(time.time() - subStartTime))
             else:
                 print(data)
 
