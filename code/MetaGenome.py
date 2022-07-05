@@ -88,6 +88,9 @@ class MetaGenome:
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + spacerSequence + ".sam"))
             for alignedSegment in alignmentFile.head(10000):
+                if alignedSegment.is_mapped:
+                    print("Cigarstring: " + alignedSegment.cigarstring)
+                    print("Aligned " + alignedSegment.get_forward_sequence() + " versus " + alignedSegment.get_reference_sequence())
                 if alignedSegment.is_mapped and alignedSegment.cigarstring == "23M":
                     referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
                     for alignedBlock in alignedSegment.get_blocks():
