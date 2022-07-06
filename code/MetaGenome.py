@@ -85,6 +85,7 @@ class MetaGenome:
                     print("Failed to find and to build index.")
             else:
                 print("Index " + indexName + " already exists. Using existing index...")
+            print("Analyzing spacer sequence: " + spacerSequence)
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + spacerSequence + ".sam"))
             for alignedSegment in alignmentFile.head(10000):
