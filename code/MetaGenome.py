@@ -79,7 +79,7 @@ class MetaGenome:
                         outputPath, indexName + spacerSequence + ".sam > /dev/null"))
                 elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
                     os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath,
-                                                                             indexName) + " -c " + spacerSequence + " -S " + os.path.join(
+                                                                             indexName) + " -c " + convertToDNA(spacerSequence) + " -S " + os.path.join(
                         outputPath, indexName + spacerSequence + ".sam > /dev/null"))
                 else:
                     print("Failed to find and to build index.")

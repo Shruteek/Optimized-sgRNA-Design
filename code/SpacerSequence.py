@@ -80,7 +80,7 @@ class SpacerSequence:
         instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
         sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
         guideSequence using the genome otherwise. """
-        self.__spacerSequence = ""  # String of intended length 23
+        self.__spacerSequence = ""  # RNA string of intended length 23
         self.__onTargetSequences = []  # List of length A with strings of length 35
         self.__onTargetScores = []  # List of length A with doubles
         self.__offTargetSequences = []  # List of length B with strings of length 35
