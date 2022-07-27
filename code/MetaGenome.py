@@ -75,7 +75,7 @@ class MetaGenome:
                 os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath, indexName) + " > /dev/null")
                 if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
                     os.system("bowtie -a -v 3 " + os.path.join(outputPath,
-                                                               indexName) + " -c " + spacerSequence + " -S " + os.path.join(
+                                                               indexName) + " -c " + convertToDNA(spacerSequence) + " -S " + os.path.join(
                         outputPath, indexName + spacerSequence + ".sam > /dev/null"))
                 elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
                     os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath,
@@ -83,9 +83,7 @@ class MetaGenome:
                         outputPath, indexName + spacerSequence + ".sam > /dev/null"))
                 else:
                     print("Failed to find and to build index.")
-            else:
-                print("Index " + indexName + " already exists. Using existing index...")
-            print("Analyzing spacer sequence: " + spacerSequence)
+            print("Aligning spacer sequence: " + convertToDNA(spacerSequence))
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + spacerSequence + ".sam"))
             for alignedSegment in alignmentFile.head(10000):
