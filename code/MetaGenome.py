@@ -76,11 +76,11 @@ class MetaGenome:
                 if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
                     os.system("bowtie -a -v 3 " + os.path.join(outputPath,
                                                                indexName) + " -c " + convertToDNA(spacerSequence) + " -S " + os.path.join(
-                        outputPath, indexName + convertToDNA(spacerSequence) + ".sam > /dev/null"))
+                        outputPath, indexName + convertToDNA(spacerSequence) + ".sam") + "  > /dev/null")
                 elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
                     os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath,
                                                                              indexName) + " -c " + convertToDNA(spacerSequence) + " -S " + os.path.join(
-                        outputPath, indexName + convertToDNA(spacerSequence) + ".sam > /dev/null"))
+                        outputPath, indexName + convertToDNA(spacerSequence) + ".sam") + "  > /dev/null")
                 else:
                     print("Failed to find and to build index.")
             print("Aligning spacer sequence: " + convertToDNA(spacerSequence))
