@@ -96,6 +96,65 @@ def complementaryRNA(sequence):
     return complement
 
 
+def complementaryDNA(sequence):
+    """Method that returns the complementary DNA strand sequence to the given input DNA or RNA sequence."""
+    complement = ""
+    if not (isValidRNA(sequence) or isValidDNA(sequence)):
+        return complement
+    for nucleotide in str.upper(sequence):
+        if nucleotide == "A":
+            complement = complement + "T"
+        elif nucleotide == "C":
+            complement = complement + "G"
+        elif nucleotide == "T":
+            complement = complement + "A"
+        elif nucleotide == "U":
+            complement = complement + "A"
+        elif nucleotide == "G":
+            complement = complement + "C"
+    return complement
+
+
+def reverseComplementaryRNA(sequence):
+    """Method that returns the reverse of the complementary RNA strand sequence to the given input RNA or DNA
+    sequence. """
+    reverseComplement = ""
+    if not (isValidRNA(sequence) or isValidDNA(sequence)):
+        return reverseComplement
+    for nucleotide in str.upper(sequence):
+        if nucleotide == "A":
+            reverseComplement = reverseComplement + "U"
+        elif nucleotide == "C":
+            reverseComplement = reverseComplement + "G"
+        elif nucleotide == "U":
+            reverseComplement = reverseComplement + "A"
+        elif nucleotide == "T":
+            reverseComplement = reverseComplement + "A"
+        elif nucleotide == "G":
+            reverseComplement = reverseComplement + "C"
+    return reverseComplement[::-1]
+
+
+def reverseComplementaryDNA(sequence):
+    """Method that returns the reverse of the complementary DNA strand sequence to the given input DNA or RNA
+    sequence. """
+    reverseComplement = ""
+    if not (isValidRNA(sequence) or isValidDNA(sequence)):
+        return reverseComplement
+    for nucleotide in str.upper(sequence):
+        if nucleotide == "A":
+            reverseComplement = reverseComplement + "T"
+        elif nucleotide == "C":
+            reverseComplement = reverseComplement + "G"
+        elif nucleotide == "T":
+            reverseComplement = reverseComplement + "A"
+        elif nucleotide == "U":
+            reverseComplement = reverseComplement + "A"
+        elif nucleotide == "G":
+            reverseComplement = reverseComplement + "C"
+    return reverseComplement[::-1]
+
+
 def convertToRNA(sequence):
     """Method that converts the given input RNA or DNA sequence to RNA."""
     complement = ""
@@ -131,25 +190,6 @@ def convertToDNA(sequence):
             complement = complement + "T"
         elif nucleotide == "G":
             complement = complement + "G"
-    return complement
-
-
-def complementaryDNA(sequence):
-    """Method that returns the complementary DNA strand sequence to the given input DNA or RNA sequence."""
-    complement = ""
-    if not (isValidRNA(sequence) or isValidDNA(sequence)):
-        return complement
-    for nucleotide in str.upper(sequence):
-        if nucleotide == "A":
-            complement = complement + "T"
-        elif nucleotide == "C":
-            complement = complement + "G"
-        elif nucleotide == "T":
-            complement = complement + "A"
-        elif nucleotide == "U":
-            complement = complement + "A"
-        elif nucleotide == "G":
-            complement = complement + "C"
     return complement
 
 

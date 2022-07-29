@@ -85,7 +85,6 @@ class MetaGenome:
                     outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
             else:
                 print("Failed to find and to build index.")
-
             print("Aligning spacer sequence: " + convertToDNA(spacerSequence))
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
@@ -96,9 +95,17 @@ class MetaGenome:
                 if alignedSegment.is_mapped and alignedSegment.cigarstring == "23M":
                     referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
                     for alignedBlock in alignedSegment.get_blocks():
-                        if alignedBlock[0] >= 6 and alignedBlock[1] <= len(referenceSequence) - 6 and referenceSequence[alignedBlock[1] - 3:alignedBlock[1]] == convertToDNA(spacerSequence)[-3:]:
-                            fullTargetSequence = referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6]
-                            foundTargets.append(fullTargetSequence)
+                        if alignedBlock[0] >= 6 and alignedBlock[1] <= len(referenceSequence) - 6:
+                            alignedReferenceSequence = referenceSequence[alignedBlock[0]:alignedBlock[1]]
+                            if alignedReferenceSequence[-3:] == convertToDNA(spacerSequence)[-3:] \
+                                    and correlateSequences(alignedReferenceSequence, convertToDNA(spacerSequence)) >= 18:
+                                fullTargetSequence = referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6]
+                                foundTargets.append(fullTargetSequence)
+                            if reverseComplementaryDNA(alignedReferenceSequence)[-3:] == convertToDNA(spacerSequence)[-3:] \
+                                    and correlateSequences(reverseComplementaryDNA(alignedReferenceSequence), convertToDNA(spacerSequence)) >= 18:
+                                fullTargetSequence = reverseComplementaryDNA(referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6])
+                                foundTargets.append(fullTargetSequence)
+            alignmentFile.close()
         return foundTargets
 
     def findTargetsFromSpacer(self, spacerSequence):
