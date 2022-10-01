@@ -87,8 +87,11 @@ class MetaGenome:
                 print("Failed to find and to build index.")
             print("Successfully aligned spacer sequence.")
             fastaFile = pysam.FastaFile(self.__OriginalPath)
+            print("Successfully opened fasta reference file.")
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
+            print("Successfully opened SAM alignment file.")
             for alignedSegment in alignmentFile.head(10000):
+                print("Successfully listed alignments.")
                 if alignedSegment.is_mapped:
                     print("Cigarstring: " + alignedSegment.cigarstring)
                     print("Aligned " + alignedSegment.get_forward_sequence() + " versus " + alignedSegment.get_reference_sequence())
