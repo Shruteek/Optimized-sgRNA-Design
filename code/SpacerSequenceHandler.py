@@ -350,7 +350,7 @@ def __runSTI(arguments):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
             metaGen = MetaGenome(arguments[3])
-            print("Analyzing given spacer sequence: " + convertToRNA(arguments[2]))
+            print("Analyzing given spacer sequence: " + arguments[2])
             spacerSequence = SpacerSequence(arguments[2], metaGen)
             data = []
             appendSpacerToData(data, spacerSequence)

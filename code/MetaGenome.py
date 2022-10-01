@@ -74,7 +74,7 @@ class MetaGenome:
                 print("Index " + indexName + " does not exist. Building...")
                 os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath,
                                                                          indexName) + " > /dev/null")
-
+            print("Aligning spacer sequence: " + convertToDNA(spacerSequence))
             if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
                 os.system("bowtie -a -v 3 " + os.path.join(outputPath,
                                                            indexName) + " -c " + convertToDNA(spacerSequence) + " -S " + os.path.join(
@@ -85,7 +85,7 @@ class MetaGenome:
                     outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
             else:
                 print("Failed to find and to build index.")
-            print("Aligning spacer sequence: " + convertToDNA(spacerSequence))
+            print("Successfully aligned spacer sequence.")
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
             for alignedSegment in alignmentFile.head(10000):
@@ -106,6 +106,7 @@ class MetaGenome:
                                 fullTargetSequence = reverseComplementaryDNA(referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6])
                                 foundTargets.append(fullTargetSequence)
             alignmentFile.close()
+            fastaFile.close()
         return foundTargets
 
     def findTargetsFromSpacer(self, spacerSequence):
