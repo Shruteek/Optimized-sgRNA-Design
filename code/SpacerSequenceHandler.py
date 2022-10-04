@@ -1,5 +1,6 @@
 import sys
-import os
+import os.path
+from os.path import exists
 from GenomeTools import *
 from MetaGenome import MetaGenome
 from SpacerSequence import SpacerSequence
@@ -356,19 +357,22 @@ def __runSTI(arguments):
             appendSpacerToData(data, spacerSequence)
             print(data)
             if len(arguments) == 5:
-                saveFile = open(arguments[4], "a+")
-                if isValidCSV(arguments[4]):
+                projectPath = os.path.dirname(os.path.realpath(__file__))
+                outputPath = os.path.join(projectPath, "Outputs")
+                saveFilePath = os.path.join(outputPath, os.path.basename(arguments[4]))
+                saveFile = open(saveFilePath, "a+")
+                if isValidCSV(saveFilePath):
                     saveFile.close()
-                    writeNestedListToCSVRows(data, arguments[4])
-                    print("Successfully saved to " + arguments[4])
-                elif isValidTSV(arguments[4]):
+                    writeNestedListToCSVRows(data, saveFilePath)
+                    print("Successfully saved to " + saveFilePath)
+                elif isValidTSV(saveFilePath):
                     saveFile.close()
-                    writeNestedListToTSVRows(data, arguments[4])
-                    print("Successfully saved to " + arguments[4])
+                    writeNestedListToTSVRows(data, saveFilePath)
+                    print("Successfully saved to " + saveFilePath)
                 else:
                     saveFile.close()
-                    os.remove(arguments[4])
-                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+                    os.remove(saveFilePath)
+                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + saveFilePath)
                     print(data)
             else:
                 print(data)
@@ -444,42 +448,37 @@ def __runMTI(arguments):
             print("[Error] Invalid FASTA file path given: " + arguments[3])
         else:
             data = []
-            subStartTime = time.time()
             metaGen = MetaGenome(arguments[3])
-            # print("Metagenome loading runtime (seconds): " + str(time.time() - subStartTime))
             if isValidCSV(arguments[2]):
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
             else:
                 read_guides = csv.reader(open(arguments[2], newline=''), delimiter="\t")
-            subStartTime = time.time()
             for row in read_guides:
                 for entry in row:
                     if isValidTargetSpacerInput(entry):
                         print("Analyzing given target sequence: " + entry)
-                        subStartTime2 = time.time()
                         spacerSequenceEntry = SpacerSequence(entry, metaGen)
                         print("Found " + str(len(spacerSequenceEntry.getOnTargetSequences())) + " on-targets and "
                               + str(len(spacerSequenceEntry.getOffTargetSequences())) + " off-targets.")
-                        # print("Sequence analysis runtime (seconds): " + str(time.time() - subStartTime2))
                         appendSpacerToData(data, spacerSequenceEntry)
-            # print("Target analysis and data compilation runtime (seconds): " + str(time.time() - subStartTime))
             if len(arguments) == 5:
-                subStartTime = time.time()
-                saveFile = open(arguments[4], "a+")
-                if isValidCSV(arguments[4]):
+                projectPath = os.path.dirname(os.path.realpath(__file__))
+                outputPath = os.path.join(projectPath, "Outputs")
+                saveFilePath = os.path.join(outputPath, os.path.basename(arguments[4]))
+                saveFile = open(saveFilePath, "a+")
+                if isValidCSV(saveFilePath):
                     saveFile.close()
-                    writeNestedListToCSVRows(data, arguments[4])
-                    print("Successfully saved to " + arguments[4])
-                elif isValidTSV(arguments[4]):
+                    writeNestedListToCSVRows(data, saveFilePath)
+                    print("Successfully saved to " + saveFilePath)
+                elif isValidTSV(saveFilePath):
                     saveFile.close()
-                    writeNestedListToTSVRows(data, arguments[4])
-                    print("Successfully saved to " + arguments[4])
+                    writeNestedListToTSVRows(data, saveFilePath)
+                    print("Successfully saved to " + saveFilePath)
                 else:
                     saveFile.close()
-                    os.remove(arguments[4])
-                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + arguments[4])
+                    os.remove(saveFilePath)
+                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + saveFilePath)
                     print(data)
-                # print("File save runtime (seconds): " + str(time.time() - subStartTime))
             else:
                 print(data)
 
