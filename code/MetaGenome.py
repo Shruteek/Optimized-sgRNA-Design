@@ -15,8 +15,6 @@ class MetaGenome:
         self.__Sequences = []
         if not isValidFasta(metaGenomePath):
             print("The given metaGenome file is not a valid .fasta string file name:" + metaGenomePath)
-        else:
-            self.addSequences(metaGenomePath)
 
     def getName(self):
         """Getter method that returns the name of the MetaGenome."""
@@ -125,11 +123,11 @@ class MetaGenome:
                     nestedOffTargets.append(offTarget)
         return nestedOffTargets
 
-    def addSequences(self, sequencesFile):
-        """Method that takes in the filename of a sequence file and adds sequences directly from it to __Sequences."""
-        count = 1
-        with open(sequencesFile) as fileHandler:
-            for record in SeqIO.parse(fileHandler, "fasta"):
-                self.__Sequences.append(Sequence(record, "Sequence " + str(count)))
-                count = count + 1
+    # def addSequences(self, sequencesFile):
+    #     """Method that takes in the filename of a sequence file and adds sequences directly from it to __Sequences."""
+    #     count = 1
+    #     with open(sequencesFile) as fileHandler:
+    #         for record in SeqIO.parse(fileHandler, "fasta"):
+    #             self.__Sequences.append(Sequence(record, "Sequence " + str(count)))
+    #             count = count + 1
 
