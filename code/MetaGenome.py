@@ -85,8 +85,7 @@ class MetaGenome:
                 print("Failed to find and to build index.")
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
-            alignments = len(alignmentFile)
-            print("Identified " + alignments + " alignments for spacer sequence: " + convertToDNA(spacerSequence))
+            alignments = 0
             for alignedSegment in alignmentFile:
                 if alignedSegment.is_mapped and alignedSegment.cigarstring == "23M":
                     referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
@@ -98,13 +97,16 @@ class MetaGenome:
                                 fullTargetSequence = referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6]
                                 foundTargets.append(fullTargetSequence)
                                 print("Aligned target " + fullTargetSequence + " versus spacer " + alignedSegment.get_forward_sequence())
+                                alignments += 1
                             elif reverseComplementaryDNA(alignedReferenceSequence)[-3:] == convertToDNA(spacerSequence)[-3:] \
                                     and correlateSequences(reverseComplementaryDNA(alignedReferenceSequence), convertToDNA(spacerSequence)) >= 18:
                                 fullTargetSequence = reverseComplementaryDNA(referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6])
                                 foundTargets.append(fullTargetSequence)
                                 print("Aligned target " + fullTargetSequence + " versus spacer " + alignedSegment.get_forward_sequence())
+                                alignments += 1
             fastaFile.close()
             alignmentFile.close()
+        print("Identified " + alignments + " alignments for spacer sequence: " + convertToDNA(spacerSequence))
         return foundTargets
 
     def findTargetsFromSpacer(self, spacerSequence):
