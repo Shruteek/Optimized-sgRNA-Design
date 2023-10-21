@@ -60,20 +60,10 @@ def isValidTargetSpacerInput(inputSequence):
     """Method that returns whether a given sequence is a valid string representing any of the following:
     1. A target sequence (20 base-pair DNA sequence resembling the spacer sequence)
     2. A spacer sequence (20 base-pair RNA sequence resembling the target sequence)
-    3. A target sequence with PAM (same as 1., but with an additional 3 DNA base-pairs of the form NGG)
-    4. A spacer sequence with PAM (same as 2., but with an additional 3 DNA base-pairs of the form NGG)
-    5. A target guide sequence (35 base-pair DNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
-    6 bp downstream)
-    6. A guide sequence (35 base-pair RNA sequence in the format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM,
-        6 bp downstream); this sequence does not physically exist anywhere but is still accepted as valid input
     Returns True if the given sequence is any of the above and False otherwise."""
     if isValidDNA(inputSequence) or isValidRNA(inputSequence):
         if len(inputSequence) == 20:
             return True
-        elif len(inputSequence) == 23:
-            return inputSequence[21:23] == "GG"
-        elif len(inputSequence) == 35:
-            return inputSequence[27:29] == "GG"
     return False
 
 
@@ -326,32 +316,31 @@ def appendSpacerToDataOld(data, spacer):
 
 
 def appendSpacerToData(data, spacer):
-    """Takes in a data list and a SpacerSequence object, and appends the relevant data from the object to the list,
-    with on-target scores and off-target scores considered separately."""
-    if isinstance(data, list):
-        if len(spacer.getOnTargetSequences()) == 0:
-            data.append(["Spacer (20 bp RNA)", "Off-Target Sequence (35 bp DNA)", "Off-Target Score",
-                         "Off-Target Count", "", ""])
-            data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
-            for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
-                data.append(["", complementaryDNA(spacer.getOffTargetSequences()[targetSequenceIndex]),
-                             spacer.getOffTargetEstimates()[targetSequenceIndex],
-                             spacer.getOffTargetCounts()[targetSequenceIndex], "", ""])
-        else:
-            data.append(["On-Target + PAM (23 bp DNA)", "On-Target Sequence (35 bp DNA)", "On-Target Heuristic",
-                         "On-Target Score", "", ""])
-            data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
-            for guideSequenceIndex in range(len(spacer.getOnTargetSequences())):
-                data.append(["", spacer.getOnTargetSequences()[guideSequenceIndex],
-                             spacer.getHeuristics()[guideSequenceIndex],
-                             spacer.getOnTargetScores()[guideSequenceIndex], "", ""])
-            data.append(["On-Target + PAM (23 bp DNA)", "Off-Target Sequence (35 bp DNA)", "Off-Target Score",
-                         "Off-Target Count", "", ""])
-            data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
-            for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
-                data.append(["", spacer.getOffTargetSequences()[targetSequenceIndex],
-                             spacer.getOffTargetEstimates()[targetSequenceIndex],
-                             spacer.getOffTargetCounts()[targetSequenceIndex], "", ""])
+    """Takes in a data list and a SpacerSequence object, and appends the relevant data from the object to the list
+    in a tidy data format, where each row represents an on/off-target sequence and its relevant information."""
+    if not isinstance(data, list):
+        print("Incorrect type given for data: " + type(data))
+        return data
+    data.append(["Spacer",
+                 "Sequence_Type",
+                 "Location",
+                 "Sequence",
+                 "Surrounding_Sequence",
+                 "Mismatches",
+                 "On_Target_Score",
+                 "Off_Target_Score"])
+    targets = spacer.getTargets()
+    spacer_sequence = spacer.getSpacerSequence()
+    for targetSequence in targets:
+        data.append([spacer_sequence,
+                     targetSequence.sequence_type,
+                     targetSequence.location,
+                     targetSequence.target_sequence,
+                     targetSequence.surrounding_sequence,
+                     targetSequence.mismatches,
+                     targetSequence.on_target_score,
+                     targetSequence.off_target_score])
+    return data
 
 
 def writeNestedListToCSVRows(nestedList, saveFilePath):

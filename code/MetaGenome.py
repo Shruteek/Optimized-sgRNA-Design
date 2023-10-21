@@ -58,13 +58,20 @@ class MetaGenome:
         return self.__OriginalPath
 
     def bowtieFindTargetsFromSpacer(self, spacerSequence):
-        """Method that takes an input 23 bp String RNA spacerSequence and uses bowtie to run alignment analysis on it with
-        respect to the metagenome. Specified flags include: -a (include all alignments), -v 5 (limit to maximum of 5
-        mismatches), -n 1 (limit to maximum of 1 mismatch in seed sequence), -l 10 (assume seed sequence is 10 base pairs), -c <SpacerSequence> (take direct sequence input rather than file), -B"""
+        """Method that takes an input 20 bp String RNA spacerSequence and uses bowtie to run alignment analysis on it
+        with respect to the metagenome. Specified flags include: -a (include all alignments), -v 5 (limit to maximum
+        of 5 mismatches), -n 1 (limit to maximum of 1 mismatch in seed sequence), -l 10 (assume seed sequence is 10
+        base pairs), -c <SpacerSequence> (take direct sequence input rather than file), --np 0 (no penalty for N
+        nucleotides in either the aligning or the reference sequence).
+
+        The method returns the list 'foundTargets', which is populated by 2-element lists where each first element is
+        a 35 base-pair DNA target sequence (either on-target or off-target) and the second element is its respective
+        location in the reference metagenome."""
         foundTargets = []
-        if not (len(spacerSequence) == 23 and isValidRNA(spacerSequence)):
+        if not (len(spacerSequence) == 20 and isValidRNA(spacerSequence)):
             return foundTargets
         else:
+            sequence_to_align = spacerSequence + "NGG"
             indexName = os.path.splitext(os.path.basename(self.__OriginalPath))[0]
             projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             outputPath = os.path.join(projectPath, "Outputs")
@@ -72,36 +79,40 @@ class MetaGenome:
                 print("Index " + indexName + " does not exist. Building...")
                 os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath,
                                                                          indexName) + " > /dev/null")
-            print("Aligning spacer sequence: " + convertToDNA(spacerSequence))
+            print("Aligning spacer sequence: " + convertToDNA(sequence_to_align))
             if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
-                os.system("bowtie -a -v 3 " + os.path.join(outputPath,
-                                                           indexName) + " -c " + convertToDNA(spacerSequence) + " -S " + os.path.join(
-                    outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
+                os.system("bowtie -a -v 3 --np 0 " + os.path.join(outputPath,
+                                                           indexName) + " -c " + convertToDNA(sequence_to_align) + " -S " + os.path.join(
+                    outputPath, indexName + convertToDNA(sequence_to_align) + ".sam"))
             elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
-                os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath,
-                                                                         indexName) + " -c " + convertToDNA(spacerSequence) + " -S " + os.path.join(
-                    outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
+                os.system("bowtie -a -v 3 --np 0 --large-index " + os.path.join(outputPath,
+                                                                         indexName) + " -c " + convertToDNA(sequence_to_align) + " -S " + os.path.join(
+                    outputPath, indexName + convertToDNA(sequence_to_align) + ".sam"))
             else:
                 print("Failed to find and to build index.")
             fastaFile = pysam.FastaFile(self.__OriginalPath)
-            alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + convertToDNA(spacerSequence) + ".sam"))
+            alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + convertToDNA(sequence_to_align) + ".sam"))
             alignments = 0
             for alignedSegment in alignmentFile:
+                # We check if the aligned segment matches all 23 base pairs (spacer + PAM) with its reference sequence.
                 if alignedSegment.is_mapped and alignedSegment.cigarstring == "23M":
                     referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
                     for alignedBlock in alignedSegment.get_blocks():
+                        # The below conditional checks if there are 6 bps around the aligned sequence - we need that
+                        # much spacing for our on-target analysis.
                         if alignedBlock[0] >= 6 and alignedBlock[1] <= len(referenceSequence) - 6:
                             alignedReferenceSequence = referenceSequence[alignedBlock[0]:alignedBlock[1]]
-                            if alignedReferenceSequence[-3:] == convertToDNA(spacerSequence)[-3:] \
-                                    and correlateSequences(alignedReferenceSequence, convertToDNA(spacerSequence)) >= 18:
+                            if alignedReferenceSequence[-3:] == convertToDNA(sequence_to_align)[-3:] \
+                                    and correlateSequences(alignedReferenceSequence, convertToDNA(sequence_to_align)) >= 18:
                                 fullTargetSequence = referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6]
                                 foundTargets.append(fullTargetSequence)
                                 print("Aligned target " + fullTargetSequence + " versus spacer " + alignedSegment.get_forward_sequence())
                                 alignments += 1
-                            elif reverseComplementaryDNA(alignedReferenceSequence)[-3:] == convertToDNA(spacerSequence)[-3:] \
-                                    and correlateSequences(reverseComplementaryDNA(alignedReferenceSequence), convertToDNA(spacerSequence)) >= 18:
+                            elif reverseComplementaryDNA(alignedReferenceSequence)[-3:] == convertToDNA(sequence_to_align)[-3:] \
+                                    and correlateSequences(reverseComplementaryDNA(alignedReferenceSequence), convertToDNA(sequence_to_align)) >= 18:
                                 fullTargetSequence = reverseComplementaryDNA(referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 6])
-                                foundTargets.append(fullTargetSequence)
+                                targetSequenceInfo = [fullTargetSequence, alignedSegment.reference_name]
+                                foundTargets.append(targetSequenceInfo)
                                 print("Aligned target " + fullTargetSequence + " versus spacer " + alignedSegment.get_forward_sequence())
                                 alignments += 1
             fastaFile.close()
