@@ -113,11 +113,10 @@ class SpacerSequence:
                              [5, 5, -1, -1, -1, -1, -1]]
 
     def __init__(self, spacerOrTargetSequence, genome):
-        """Initialization method that takes in (1) a 35 bp DNA guide/target guide sequence, a 23 bp DNA spacer/target
-        sequence + PAM, or a 20 bp DNA spacer/target sequence, and (2) an associated metaGenome class file, and
-        instantiates, checking to ensure the guideSequence is in the proper format (6 bp upstream, 20 bp spacer
-        sequence, 3 bp PAM, 6 bp downstream), as well as that given genome is a MetaGenome, trying to complete the
-        guideSequence using the genome otherwise. """
+        """Initialization method that takes in a 23 bp DNA spacer/target or a 20 bp DNA spacer/target sequence,
+        and (2) an associated metaGenome class file, and instantiates, checking to ensure the guideSequence is in the
+        proper format (6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream), as well as that given genome
+        is a MetaGenome, trying to complete the guideSequence using the genome otherwise. """
         self.__spacerSequence = ""  # RNA string of length 23
         self.__onTargetSequences = []  # List of length A with DNA strings of length 35
         self.__onTargetScores = []  # List of length A with doubles
@@ -127,8 +126,7 @@ class SpacerSequence:
         if not isValidTargetSpacerInput(spacerOrTargetSequence):
             print("Input sequence is not a valid spacer sequence: " + spacerOrTargetSequence)
             return
-        if len(spacerOrTargetSequence) == 20:
-            self.__spacerSequence = convertToRNA(spacerOrTargetSequence)
+        self.__spacerSequence = convertToDNA(spacerOrTargetSequence[0:20])
         targetSequencesInfo = genome.bowtieFindTargetsFromSpacer(self.__spacerSequence)
 
         for targetSequenceInfo in targetSequencesInfo: # Instantiate all target sequences and calculate on-target scores

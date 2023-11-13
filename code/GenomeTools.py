@@ -40,22 +40,6 @@ def isValidRNA(RNASequence):
     return True
 
 
-def isValidGuideSequence(inputSequence):
-    """Method that returns whether a given sequence is a valid string representing a 35 base-pair RNA sequence in the
-        format 6 bp upstream, 20 bp spacer sequence, 3 bp PAM, 6 bp downstream."""
-    if not isinstance(inputSequence, str):
-        # print("Given sequence is not a valid string: " + coreSequence)
-        return False
-    elif not isValidRNA(inputSequence):
-        # print("Given guide sequence is not valid RNA: " + coreSequence)
-        return False
-    elif not (len(inputSequence) == 35 and inputSequence[27:29] == "CC"):
-        # print("Given RNA sequence is not 35 bp with a PAM: " + coreSequence)
-        return False
-    else:
-        return True
-
-
 def isValidTargetSpacerInput(inputSequence):
     """Method that returns whether a given sequence is a valid string representing any of the following:
     1. A target sequence (20 base-pair DNA sequence resembling the spacer sequence)
@@ -64,26 +48,9 @@ def isValidTargetSpacerInput(inputSequence):
     if isValidDNA(inputSequence) or isValidRNA(inputSequence):
         if len(inputSequence) == 20:
             return True
+        elif len(inputSequence) == 23:
+            return inputSequence[21:23] == "GG"
     return False
-
-
-def complementaryRNA(sequence):
-    """Method that returns the complementary RNA strand sequence to the given input RNA or DNA sequence."""
-    complement = ""
-    if not (isValidRNA(sequence) or isValidDNA(sequence)):
-        return complement
-    for nucleotide in str.upper(sequence):
-        if nucleotide == "A":
-            complement = complement + "U"
-        elif nucleotide == "C":
-            complement = complement + "G"
-        elif nucleotide == "U":
-            complement = complement + "A"
-        elif nucleotide == "T":
-            complement = complement + "A"
-        elif nucleotide == "G":
-            complement = complement + "C"
-    return complement
 
 
 def complementaryDNA(sequence):
@@ -103,26 +70,6 @@ def complementaryDNA(sequence):
         elif nucleotide == "G":
             complement = complement + "C"
     return complement
-
-
-def reverseComplementaryRNA(sequence):
-    """Method that returns the reverse of the complementary RNA strand sequence to the given input RNA or DNA
-    sequence. """
-    reverseComplement = ""
-    if not (isValidRNA(sequence) or isValidDNA(sequence)):
-        return reverseComplement
-    for nucleotide in str.upper(sequence):
-        if nucleotide == "A":
-            reverseComplement = reverseComplement + "U"
-        elif nucleotide == "C":
-            reverseComplement = reverseComplement + "G"
-        elif nucleotide == "U":
-            reverseComplement = reverseComplement + "A"
-        elif nucleotide == "T":
-            reverseComplement = reverseComplement + "A"
-        elif nucleotide == "G":
-            reverseComplement = reverseComplement + "C"
-    return reverseComplement[::-1]
 
 
 def reverseComplementaryDNA(sequence):
@@ -145,25 +92,6 @@ def reverseComplementaryDNA(sequence):
     return reverseComplement[::-1]
 
 
-def convertToRNA(sequence):
-    """Method that converts the given input RNA or DNA sequence to RNA."""
-    complement = ""
-    if not (isValidRNA(sequence) or isValidDNA(sequence)):
-        return complement
-    for nucleotide in str.upper(sequence):
-        if nucleotide == "A":
-            complement = complement + "A"
-        elif nucleotide == "C":
-            complement = complement + "C"
-        elif nucleotide == "U":
-            complement = complement + "U"
-        elif nucleotide == "T":
-            complement = complement + "U"
-        elif nucleotide == "G":
-            complement = complement + "G"
-    return complement
-
-
 def convertToDNA(sequence):
     """Method that converts the given input RNA or DNA sequence to DNA."""
     complement = ""
@@ -181,138 +109,6 @@ def convertToDNA(sequence):
         elif nucleotide == "G":
             complement = complement + "G"
     return complement
-
-
-def completeGuideSequence(spacer, metaGenome):
-    """Takes in a 20-bp RNA spacer sequence and a metaGenome and returns the full RNA guide sequence according to the
-    metaGenome, if the complement of the spacer exists in the metagenome and is within usable bounds."""
-    if not isValidRNA(spacer):
-        print("Spacer is not a string.")
-        return spacer
-    elif not len(spacer) == 20:
-        print("Spacer is not 20 base pairs.")
-        return spacer
-    else:
-        target = complementaryDNA(spacer)
-        matchingSequences = metaGenome.getSequence(target)
-        matchingSubsequenceIndices = []
-        for sequence in matchingSequences:
-            matchingSubsequenceIndices.append([m.start() for m in re.finditer(target, sequence)])
-        for sequenceIndex in range(len(matchingSequences)):
-            for subsequenceIndex in matchingSubsequenceIndices[sequenceIndex]:
-                if 6 < subsequenceIndex < len(matchingSequences[sequenceIndex]) - 6 and \
-                        matchingSequences[sequenceIndex][subsequenceIndex:(subsequenceIndex + 20)] == target and \
-                        matchingSequences[sequenceIndex][(subsequenceIndex + 21):(subsequenceIndex + 20 + 3)] == "GG":
-                    return complementaryRNA(
-                        matchingSequences[sequenceIndex][(subsequenceIndex - 6):(subsequenceIndex + 29)])
-        return spacer
-
-
-def findTargetsFromSpacer(spacerSequence, substrateSequence, mismatchStrictness):
-    """Takes in a 20 bp RNA string spacerSequence and a substrateSequence, cross-correlates the DNA complement of the
-    spacer with the full substrate, finds each 35 bp subsequence that has a PAM (NGG) and a  correlation of at least
-    20 - mismatchStrictness, and returns a list of valid 35 bp target guide sequences."""
-    if not (isValidRNA(spacerSequence) and len(spacerSequence) == 20):
-        # print("Given sequence is not a valid spacer sequence: " + spacerSequence)
-        return []
-    else:
-        targetSequence = convertToDNA(spacerSequence)
-        offTargets = []
-        crosscorrelation = crossCorrelateSequencesEfficiently(targetSequence, substrateSequence)
-        for shift in range(len(crosscorrelation)):
-            if crosscorrelation[shift] >= len(targetSequence) - mismatchStrictness:
-                offTargets.append(substrateSequence[shift:(shift + 6 + 6 + 20 + 3)])
-        return offTargets
-
-
-def crossCorrelateSequencesEfficiently(targetSequence, substrateSequence):
-    """Takes in a 20 bp DNA string targetSequence and an arbitrary length DNA string substrateSequence,
-    cross-correlates targetSequence by shifting it along substrateSequence, and returns the results. Correlates the
-    first PAMAdjacentLength bp in the 20 bp ideal target sequence (AKA the PAM-adjacent region) with the first
-    PAMAdjacentLength bp of the 20 bp in the middle of every potential 35 bp target guide  sequence on
-    substrateSequence, and if there is no more than PAMMismatchStrictness mismatches, returns the full numerical
-    correlation of both 20 bp regions (target sequence and potential target guide subsequence), storing the results
-    as a list of integers, with each correlation result between 20 bp targetSequence and substrate 35 bp subsequence
-    being stored at the cross-correlation shift index of the list. Records 0 for any 35 bp region without a PAM.
-    Records just the 10 bp PAM-adjacent correlation for any region with more than 1 PAM-adjacent mismatch. """
-    crosscorrelation = []
-    PAMAdjacentLength = 10
-    PAMMismatchStrictness = 1
-    for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
-        correlation = 0
-        if substrateSequence[(shift + 27):(shift + 29)] == "GG":
-            correlation = correlateSequences(targetSequence[0:PAMAdjacentLength],
-                                             substrateSequence[(shift + 6):(shift + 6 + PAMAdjacentLength)])
-            if correlation >= PAMAdjacentLength - PAMMismatchStrictness:
-                correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
-        crosscorrelation.append(correlation)
-    return crosscorrelation
-
-
-def crossCorrelateSequences(targetSequence, substrateSequence):
-    """Takes in a 20 bp DNA string targetSequence and an arbitrary length DNA string substrateSequence, cross-correlates
-    targetSequence by shifting it along substrateSequence, and returns the results. Correlates the 20 bp ideal target
-    sequence with the 20 bp in the middle of every potential 35 bp target guide sequence on substrateSequence, and
-    returns the numerical correlation results as a list of integers, with each correlation result between 20 bp
-    targetSequence and substrate 35 bp subsequence being stored at the cross-correlation shift index of the list.
-    Records 0 for any 35 bp region without a PAM."""
-    crosscorrelation = []
-    for shift in range(0, len(substrateSequence) - 20 - 3 - 6 - 6 + 1):
-        correlation = 0
-        if substrateSequence[(shift + 27):(shift + 29)] == "GG":
-            correlation = correlateSequences(targetSequence, substrateSequence[(shift + 6):(shift + 26)])
-        crosscorrelation.append(correlation)
-    return crosscorrelation
-
-
-def correlateSequences(targetSequence, substrateSubsequence):
-    """Takes in any two DNA strings (targetSequence and substrateSubsequence) of the same length, validates the inputs,
-    and calculates the correlation between them, where equivalent characters add 1 and other characters add 0, then
-    returns the correlation of the two strings."""
-    correlation = 0
-    if not (isinstance(targetSequence, str) and isinstance(substrateSubsequence, str)):
-        # print("Given sequences to correlate are not strings.")
-        return correlation
-    elif not len(targetSequence) == len(substrateSubsequence):
-        # print("Sequences to correlate are not same length: " + targetSequence + " and " + substrateSubsequence)
-        return correlation
-    else:
-        for nucleotideIndex in range(len(targetSequence)):
-            if targetSequence[nucleotideIndex] == substrateSubsequence[nucleotideIndex]:
-                correlation = correlation + 1
-            elif substrateSubsequence[nucleotideIndex] == "N" or targetSequence[nucleotideIndex] == "N":
-                correlation = correlation + 1
-    return correlation
-
-
-def saveToTXT(data, saveFilePath):
-    """Takes in arbitrary data and a save file name (WITHOUT the file type extension), writes the data to a .txt file at
-    the given saveFilePath, and returns the path of the saved .txt file."""
-    saveFile = open(saveFilePath + ".txt", "w+")
-    saveFile.write(data)
-    return saveFilePath + ".txt"
-
-
-def appendSpacerToDataOld(data, spacer):
-    """Takes in a data list and a SpacerSequence object, and appends the relevant data from the object to the list,
-    even if no valid guide sequences were identified. Antiquated: Calculates a different off-target score for each
-    on-target sequence based on the ratio term, which is neglected in the new function. """
-    if isinstance(data, list):
-        data.append([spacer.getSpacerSequence(), "", "", "", "", ""])
-        if len(spacer.getOnTargetSequences()) == 0:
-            for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
-                data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
-                             spacer.getOffTargetEstimates()[targetSequenceIndex],
-                             spacer.getOffTargetCounts()[targetSequenceIndex]])
-        else:
-            for guideSequenceIndex in range(len(spacer.getOnTargetSequences())):
-                data.append(["", complementaryDNA(spacer.getOnTargetSequences()[guideSequenceIndex]),
-                             spacer.getHeuristics()[guideSequenceIndex],
-                             spacer.getOnTargetScores()[guideSequenceIndex], "", "", ""])
-                for targetSequenceIndex in range(len(spacer.getOffTargetSequences())):
-                    data.append(["", "", "", "", spacer.getOffTargetSequences()[targetSequenceIndex],
-                                 spacer.getOffTargetScores()[guideSequenceIndex][targetSequenceIndex],
-                                 spacer.getOffTargetCounts()[targetSequenceIndex]])
 
 
 def appendSpacerToData(data, spacer):
@@ -366,24 +162,3 @@ def writeNestedListToTSVRows(nestedList, saveFilePath):
     TSVFile.close()
     return saveFilePath
 
-
-def writeListToCSVRow(contentsList, saveFilePath):
-    """Takes in a list containing data and a .CSV save file name (WITH the file type extension), appends each element
-        of the list to a cell in a new row of a .CSV file at the given saveFilePath (keeping the contents if the file
-        already exists), and returns the path of the saved .CSV file."""
-    TSVFile = open(saveFilePath, "a+", newline="")
-    TSVlinewriter = csv.writer(TSVFile, delimiter=",")
-    TSVlinewriter.writerow(contentsList)
-    TSVFile.close()
-    return saveFilePath
-
-
-def writeListToTSVRow(contentsList, saveFilePath):
-    """Takes in a list containing data and a .TSV save file name (WITH the file type extension), appends each element
-        of the list to a cell in a new row of a .TSV file at the given saveFilePath (keeping the contents if the file
-        already exists), and returns the path of the saved .TSV file."""
-    TSVFile = open(saveFilePath, "a", newline="")
-    TSVlinewriter = csv.writer(TSVFile, delimiter=" ")
-    TSVlinewriter.writerow(contentsList)
-    TSVFile.close()
-    return saveFilePath
