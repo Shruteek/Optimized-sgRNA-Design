@@ -150,9 +150,9 @@ def __runMTI(arguments):
             data = []
             metaGen = MetaGenome(arguments[3])
             if isValidCSV(arguments[2]):
-                read_guides = csv.reader(open(arguments[2], newline=''), delimiter=',')
+                read_guides = csv.reader(open(arguments[2], encoding="UTF-8"), delimiter=',')
             else:
-                read_guides = csv.reader(open(arguments[2], newline=''), delimiter="\t")
+                read_guides = csv.reader(open(arguments[2], encoding="UTF-8"), delimiter="\t")
             for row in read_guides:
                 for entry in row:
                     if isValidTargetSpacerInput(entry):
