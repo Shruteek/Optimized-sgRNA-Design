@@ -112,7 +112,7 @@ def __runSTI(arguments):
             appendSpacerToData(data, spacerSequence)
             print(data)
             if len(arguments) == 5:
-                projectPath = os.path.dirname(os.path.realpath(__file__))
+                projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
                 outputPath = os.path.join(projectPath, "Outputs")
                 saveFilePath = os.path.join(outputPath, os.path.basename(arguments[4]))
                 saveFile = open(saveFilePath, "a+")
@@ -164,7 +164,7 @@ def __runMTI(arguments):
                               + str(len(spacerSequenceEntry.getOffTargetSequences())) + " off-targets.")
                         appendSpacerToData(data, spacerSequenceEntry)
             if len(arguments) == 5:
-                projectPath = os.path.dirname(os.path.realpath(__file__))
+                projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
                 outputPath = os.path.join(projectPath, "Outputs")
                 saveFilePath = os.path.join(outputPath, os.path.basename(arguments[4]))
                 saveFile = open(saveFilePath, "a+")
