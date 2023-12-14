@@ -80,11 +80,11 @@ class MetaGenome:
                                                                          indexName) + " > /dev/null")
             print("Aligning spacer sequence: " + sequence_to_align)
             if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
-                os.system("bowtie -a -v 3 --np 0 " + os.path.join(outputPath, indexName)
+                os.system("bowtie -a -v 3 " + os.path.join(outputPath, indexName)
                           + " -c " + sequence_to_align
                           + " -S " + os.path.join(outputPath, indexName + sequence_to_align + ".sam"))
             elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
-                os.system("bowtie -a -v 3 --np 0 --large-index " + os.path.join(outputPath, indexName)
+                os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath, indexName)
                           + " -c " + sequence_to_align
                           + " -S " + os.path.join(outputPath, indexName + sequence_to_align + ".sam"))
             else:

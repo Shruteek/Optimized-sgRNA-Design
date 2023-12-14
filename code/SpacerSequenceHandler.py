@@ -9,7 +9,7 @@ import time
 
 def __fileSetup():
     """Checks if folders to be used in program exist, and if not, sets them up."""
-    projectPath = os.path.dirname(os.path.realpath(__file__))
+    projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     outputPath = os.path.join(projectPath, "Outputs")
     dataPath = os.path.join(projectPath, "Genedata")
     if not os.path.isdir(outputPath):
@@ -106,6 +106,8 @@ def __runSTI(arguments):
             metaGen = MetaGenome(arguments[3])
             print("Analyzing given spacer sequence: " + arguments[2])
             spacerSequence = SpacerSequence(arguments[2], metaGen)
+            print("Found " + str(len(spacerSequence.getOnTargetSequences())) + " on-targets and "
+                  + str(len(spacerSequence.getOffTargetSequences())) + " off-targets.")
             data = []
             appendSpacerToData(data, spacerSequence)
             print(data)
