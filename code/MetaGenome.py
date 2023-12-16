@@ -74,27 +74,26 @@ class MetaGenome:
             indexName = os.path.splitext(os.path.basename(self.__OriginalPath))[0]
             projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             outputPath = os.path.join(projectPath, "Outputs")
-            if (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt"))) and (not os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl"))):
+            bowtieIndexPath = os.path.join(outputPath, indexName)
+            outputFilePath = os.path.join(outputPath, indexName + "_" + sequence_to_align + ".sam")
+            if (not os.path.exists(bowtieIndexPath + ".rev.2.ebwt")) and (not os.path.exists(bowtieIndexPath + ".rev.2.ebwtl")):
                 print("Index " + indexName + " does not exist. Building...")
-                os.system("bowtie-build " + self.__OriginalPath + " " + os.path.join(outputPath,
-                                                                         indexName) + " > /dev/null")
+                os.system("bowtie-build " + self.__OriginalPath + " " + bowtieIndexPath)
             print("Aligning spacer sequence: " + sequence_to_align)
-            if os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwt")):
-                os.system("bowtie -a -v 3 " + os.path.join(outputPath, indexName)
+            bowtie2Options = " -a --mp 1,1 -L 5 -N 0 --np 0 --score-min L,-3,0 "
+            if os.path.exists(bowtieIndexPath + ".rev.2.ebwt") or os.path.exists(bowtieIndexPath + ".rev.2.ebwtl"):
+                os.system("bowtie2 " + bowtie2Options
+                          + " -x " + bowtieIndexPath
                           + " -c " + sequence_to_align
-                          + " -S " + os.path.join(outputPath, indexName + sequence_to_align + ".sam"))
-            elif os.path.exists(os.path.join(outputPath, indexName + ".rev.2.ebwtl")):
-                os.system("bowtie -a -v 3 --large-index " + os.path.join(outputPath, indexName)
-                          + " -c " + sequence_to_align
-                          + " -S " + os.path.join(outputPath, indexName + sequence_to_align + ".sam"))
+                          + " -S " + outputFilePath)
             else:
                 print("Failed to find and to build index.")
-            # Now that we have aligned the FASTA file, let's check each alignment.
+            # Now that we have aligned the FASTA file into a SAM file, let's check each alignment.
             fastaFile = pysam.FastaFile(self.__OriginalPath)
             alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + sequence_to_align + ".sam"))
             alignments = 0
             for alignedSegment in alignmentFile:
-                # We check if the aligned segment matches all 20 base pairs of the spacer with its target sequence.
+                # We check if the aligned segment lines up with all 20 base pairs of the spacer.
                 if alignedSegment.is_mapped and alignedSegment.cigarstring == "20M":
                     # If so, we fetch the full reference sequence that contains the target.
                     referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
@@ -102,7 +101,7 @@ class MetaGenome:
                         # The below conditional checks if there are 6 bps around the aligned sequence - we need that
                         # much spacing for our on-target analysis.
                         if alignedBlock[0] >= 6 and alignedBlock[1] <= len(referenceSequence) - 9:
-                            # If so, let's grab the target sequence.
+                            # If so, let's grab the target sequence, the 3 bp PAM, 6 bp upstream, and 6 bp downstream.
                             surroundingTargetSequence = referenceSequence[alignedBlock[0] - 6:alignedBlock[1] + 9]
                             # We check if the target sequence has a PAM ('NGG') after the spacer, and if there are at
                             # most 5 mismatches
@@ -114,6 +113,7 @@ class MetaGenome:
                                 alignments += 1
                             else:
                                 # Otherwise, we check for the reverse complement of the target sequence:
+                                surroundingTargetSequence =  referenceSequence[alignedBlock[0] - 9:alignedBlock[1] + 6]
                                 surroundingTargetSequence = reverseComplementaryDNA(surroundingTargetSequence)
                                 if surroundingTargetSequence[27:29] == "GG" \
                                         and sum(n1 != n2 for n1, n2 in zip(surroundingTargetSequence[6:26],sequence_to_align)) <= 5:
