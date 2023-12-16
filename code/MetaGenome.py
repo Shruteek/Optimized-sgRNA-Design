@@ -79,9 +79,9 @@ class MetaGenome:
             if (not os.path.exists(bowtieIndexPath + ".rev.2.ebwt")) and (not os.path.exists(bowtieIndexPath + ".rev.2.ebwtl")):
                 print("Index " + indexName + " does not exist. Building...")
                 os.system("bowtie-build " + self.__OriginalPath + " " + bowtieIndexPath)
-            print("Aligning spacer sequence: " + sequence_to_align)
             bowtie2Options = " -a --mp 1,1 -L 5 -N 0 --np 0 --score-min L,-3,0 "
             if os.path.exists(bowtieIndexPath + ".rev.2.ebwt") or os.path.exists(bowtieIndexPath + ".rev.2.ebwtl"):
+                print("Aligning spacer sequence " + sequence_to_align + " to Bowtie2 index at " + bowtieIndexPath)
                 os.system("bowtie2 " + bowtie2Options
                           + " -x " + bowtieIndexPath
                           + " -c " + sequence_to_align
