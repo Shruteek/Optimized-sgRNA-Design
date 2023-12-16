@@ -74,13 +74,15 @@ class MetaGenome:
             indexName = os.path.splitext(os.path.basename(self.__OriginalPath))[0]
             projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             outputPath = os.path.join(projectPath, "Outputs")
-            bowtieIndexPath = os.path.join(outputPath, indexName)
+            genedataPath = os.path.join(projectPath, "Genedata")
+            bowtieIndexPath = os.path.join(genedataPath, indexName)
             outputFilePath = os.path.join(outputPath, indexName + "_" + sequence_to_align + ".sam")
-            if (not os.path.exists(bowtieIndexPath + ".rev.2.ebwt")) and (not os.path.exists(bowtieIndexPath + ".rev.2.ebwtl")):
+            if (not os.path.exists(bowtieIndexPath + ".rev.2.bt2")) and (not os.path.exists(bowtieIndexPath + ".rev.2.bt2l")):
                 print("Index " + indexName + " does not exist. Building...")
                 os.system("bowtie2-build " + self.__OriginalPath + " " + bowtieIndexPath)
+                print()
             bowtie2Options = " -a --mp 1,1 -L 5 -N 0 --np 0 --score-min L,-3,0 "
-            if os.path.exists(bowtieIndexPath + ".rev.2.ebwt") or os.path.exists(bowtieIndexPath + ".rev.2.ebwtl"):
+            if os.path.exists(bowtieIndexPath + ".rev.2.bt2") or os.path.exists(bowtieIndexPath + ".rev.2.bt2l"):
                 print("Aligning spacer sequence " + sequence_to_align + " to Bowtie2 index at " + bowtieIndexPath)
                 os.system("bowtie2 " + bowtie2Options
                           + " -x " + bowtieIndexPath
