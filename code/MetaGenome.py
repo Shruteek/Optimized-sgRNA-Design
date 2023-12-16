@@ -67,7 +67,7 @@ class MetaGenome:
         a 35 base-pair DNA target sequence (either on-target or off-target) and the second element is its respective
         location in the reference metagenome."""
         foundTargets = []
-        if not (len(spacerSequence) == 20 and isValidRNA(spacerSequence)):
+        if not (len(spacerSequence) == 20 and (isValidRNA(spacerSequence) or isValidDNA(spacerSequence))):
             return foundTargets
         else:
             sequence_to_align = convertToDNA(spacerSequence)

@@ -129,7 +129,7 @@ class SpacerSequence:
         self.__spacerSequence = convertToDNA(spacerOrTargetSequence[0:20])
         print("DEBUG: Finding targets from spacer for sequence " + self.__spacerSequence)
         targetSequencesInfo = genome.bowtieFindTargetsFromSpacer(self.__spacerSequence)
-        print("DEBUG: Found " + len(targetSequencesInfo) + " targets from spacer for sequence " + self.__spacerSequence)
+        print("DEBUG: Found " + str(len(targetSequencesInfo)) + " targets from spacer for sequence " + self.__spacerSequence)
         for targetSequenceInfo in targetSequencesInfo: # Instantiate all target sequences and calculate on-target scores
             targetInstance = TargetSequence(self, targetSequenceInfo[0], targetSequenceInfo[1])
             if targetInstance.sequence_type == "On-Target":
