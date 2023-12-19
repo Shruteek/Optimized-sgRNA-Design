@@ -15,7 +15,7 @@ class TargetSequence:
         self.surrounding_sequence = full_sequence
         self.location = metagenome_location
 
-        self.spacer_to_align = self.SpacerSequenceObject.__spacerSequence
+        self.spacer_to_align = self.SpacerSequenceObject.getSpacerSequence()
         self.target_sequence = self.surrounding_sequence[6:26]
         if self.target_sequence == convertToDNA(self.spacer_to_align):
             self.sequence_type = "On-Target"
