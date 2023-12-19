@@ -125,7 +125,7 @@ class MetaGenome:
                                     alignments += 1
             fastaFile.close()
             alignmentFile.close()
-        print("Identified " + alignments + " alignments for spacer sequence: " + convertToDNA(spacerSequence))
+        print("Identified " + str(alignments) + " alignments for spacer sequence: " + convertToDNA(spacerSequence))
         return foundTargets
 
 
