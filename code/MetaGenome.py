@@ -92,7 +92,7 @@ class MetaGenome:
                 print("Failed to find and to build index.")
             # Now that we have aligned the FASTA file into a SAM file, let's check each alignment.
             fastaFile = pysam.FastaFile(self.__OriginalPath)
-            alignmentFile = pysam.AlignmentFile(os.path.join(outputPath, indexName + sequence_to_align + ".sam"))
+            alignmentFile = pysam.AlignmentFile(outputFilePath)
             alignments = 0
             for alignedSegment in alignmentFile:
                 # We check if the aligned segment lines up with all 20 base pairs of the spacer.
