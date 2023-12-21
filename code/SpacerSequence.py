@@ -35,11 +35,11 @@ class TargetSequence:
         if self.sequence_type == "On-Target":
             self.off_target_score = None
         else:
-            if len(self.SpacerSequenceObject.__onTargetScores) == 0:
+            if len(self.SpacerSequenceObject.getOnTargetScores()) == 0:
                 self.off_target_score = self.SpacerSequenceObject.calcOffTargetEstimate(self.surrounding_sequence)
             else:
                 self.off_target_score = self.SpacerSequenceObject.calcOffTargetScore(self.surrounding_sequence,
-                                                                                     max(self.SpacerSequenceObject.__onTargetScores))
+                                                                                     max(self.SpacerSequenceObject.getOnTargetScores()))
 
 
 class SpacerSequence:
