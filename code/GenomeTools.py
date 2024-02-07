@@ -8,7 +8,7 @@ def isValidFasta(FASTAFile):
     return os.path.exists(FASTAFile) \
            and str.lower(os.path.splitext(FASTAFile)[1]) == ".fasta" \
            or str.lower(os.path.splitext(FASTAFile)[1]) == ".fastq" \
-           or str.lower(os.path.splitext(FASTAFile)[1]) == ".fastq.gz"
+           or str.lower(os.path.splitext(FASTAFile)[1]) == ".gz"
 
 
 def isValidCSV(CSVFile):
