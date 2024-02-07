@@ -15,6 +15,7 @@ class MetaGenome:
         if not isValidFasta(metaGenomePath):
             print("The given metaGenome file is not a valid .fasta string file name:" + metaGenomePath)
 
+
     def getName(self):
         """Getter method that returns the name of the MetaGenome."""
         return self.__Name
@@ -80,7 +81,7 @@ class MetaGenome:
             if (not os.path.exists(bowtieIndexPath + ".rev.2.bt2")) and (not os.path.exists(bowtieIndexPath + ".rev.2.bt2l")):
                 print("Index " + indexName + " does not exist. Building...")
                 os.system("bowtie2-build " + self.__OriginalPath + " " + bowtieIndexPath)
-                print()
+
             bowtie2Options = " -a --mp 1,1 -L 5 -N 0 --np 0 --score-min L,-5,0 "
             if os.path.exists(bowtieIndexPath + ".rev.2.bt2") or os.path.exists(bowtieIndexPath + ".rev.2.bt2l"):
                 print("Aligning spacer sequence " + sequence_to_align + " to Bowtie2 index at " + bowtieIndexPath)
@@ -88,6 +89,7 @@ class MetaGenome:
                           + " -x " + bowtieIndexPath
                           + " -c " + sequence_to_align
                           + " -S " + outputFilePath)
+
             else:
                 print("Failed to find and to build index.")
             # Now that we have aligned the FASTA file into a SAM file, let's check each alignment.
@@ -127,5 +129,7 @@ class MetaGenome:
             alignmentFile.close()
         print("Identified " + str(alignments) + " alignments for spacer sequence: " + convertToDNA(spacerSequence))
         return foundTargets
+
+
 
 

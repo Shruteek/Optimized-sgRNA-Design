@@ -5,7 +5,10 @@ import os
 
 def isValidFasta(FASTAFile):
     """Takes in a string filename and returns whether the given path points to an existing FASTA file."""
-    return os.path.exists(FASTAFile) and str.lower(os.path.splitext(FASTAFile)[1]) == ".fasta"
+    return os.path.exists(FASTAFile) \
+           and str.lower(os.path.splitext(FASTAFile)[1]) == ".fasta" \
+           or str.lower(os.path.splitext(FASTAFile)[1]) == ".fastq" \
+           or str.lower(os.path.splitext(FASTAFile)[1]) == ".fastq.gz"
 
 
 def isValidCSV(CSVFile):
@@ -42,8 +45,8 @@ def isValidRNA(RNASequence):
 
 def isValidTargetSpacerInput(inputSequence):
     """Method that returns whether a given sequence is a valid string representing any of the following:
-    1. A target sequence (20 base-pair DNA sequence resembling the spacer sequence)
-    2. A spacer sequence (20 base-pair RNA sequence resembling the target sequence)
+    1. A target/spacer sequence (20 base-pair RNA/DNA sequence resembling the target/spacer sequence)
+    2. A target/spacer + PAM sequence (23 base-pair RNA/DNA sequence resembling the target sequence with its PAM)
     Returns True if the given sequence is any of the above and False otherwise."""
     if isValidDNA(inputSequence) or isValidRNA(inputSequence):
         if len(inputSequence) == 20:
@@ -138,6 +141,17 @@ def appendSpacerToData(data, spacer):
                      targetSequence.off_target_score])
     return data
 
+
+def writeNestedListToRows(nestedList, saveFilePath):
+    """Takes in a nested list containing data and a save file name (WITH the file type extension), writes the
+    nested list data to a file at the given saveFilePath (after the contents if the file already exists),
+    and returns the path of the saved file."""
+    if isValidCSV(saveFilePath):
+        writeNestedListToCSVRows(nestedList, saveFilePath)
+    elif isValidTSV(saveFilePath):
+        writeNestedListToTSVRows(nestedList, saveFilePath)
+    else:
+        print("Invalid TSV/CSV file input.")
 
 def writeNestedListToCSVRows(nestedList, saveFilePath):
     """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the

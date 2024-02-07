@@ -95,7 +95,7 @@ def __runSTI(arguments):
     elif len(arguments) == 3:
         print("[Error] Missing metagenome file input.")
     elif len(arguments) > 5:
-        print("[Error] Unexpected arguments after metagenome file input (see below): \n" + str(arguments[5:]))
+        print("[Error] Unexpected arguments after output file (see below): \n" + str(arguments[5:]))
     else:
         if not isValidTargetSpacerInput(arguments[2]):
             print("[Error] Invalid target sequence given: " + arguments[2] +
@@ -111,26 +111,23 @@ def __runSTI(arguments):
             data = []
             appendSpacerToData(data, spacerSequence)
             print(data)
-            if len(arguments) == 5:
-                projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-                outputPath = os.path.join(projectPath, "Outputs")
-                saveFilePath = os.path.join(outputPath, os.path.basename(arguments[4]))
-                saveFile = open(saveFilePath, "a+")
-                if isValidCSV(saveFilePath):
-                    saveFile.close()
-                    writeNestedListToCSVRows(data, saveFilePath)
-                    print("Successfully saved to " + saveFilePath)
-                elif isValidTSV(saveFilePath):
-                    saveFile.close()
-                    writeNestedListToTSVRows(data, saveFilePath)
-                    print("Successfully saved to " + saveFilePath)
-                else:
-                    saveFile.close()
-                    os.remove(saveFilePath)
-                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + saveFilePath)
-                    print(data)
+            if len(arguments) != 5: return
+            projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+            outputPath = os.path.join(projectPath, "Outputs")
+            saveFilePath = os.path.join(outputPath, os.path.basename(arguments[4]))
+            saveFile = open(saveFilePath, "a+")
+            if isValidCSV(saveFilePath):
+                saveFile.close()
+                writeNestedListToCSVRows(data, saveFilePath)
+                print("Successfully saved to " + saveFilePath)
+            elif isValidTSV(saveFilePath):
+                saveFile.close()
+                writeNestedListToTSVRows(data, saveFilePath)
+                print("Successfully saved to " + saveFilePath)
             else:
-                print(data)
+                saveFile.close()
+                os.remove(saveFilePath)
+                print("[Error] Could not save data. Invalid TSV or CSV file path: " + saveFilePath)
 
 
 def __runMTI(arguments):
@@ -142,7 +139,7 @@ def __runMTI(arguments):
     elif len(arguments) == 3:
         print("[Error] Missing metagenome file input.")
     elif len(arguments) > 5:
-        print("[Error] Unexpected arguments after metagenome file input (see below): \n" + str(arguments[5:]))
+        print("[Error] Unexpected arguments after output file (see below): \n" + str(arguments[5:]))
     else:
         if not (isValidCSV(arguments[2]) or isValidTSV(arguments[2])):
             print("[Error] Invalid CSV/TSV given: " + arguments[2])
@@ -163,26 +160,18 @@ def __runMTI(arguments):
                         print("Found " + str(len(spacerSequenceEntry.getOnTargetSequences())) + " on-targets and "
                               + str(len(spacerSequenceEntry.getOffTargetSequences())) + " off-targets.")
                         appendSpacerToData(data, spacerSequenceEntry)
-            if len(arguments) == 5:
-                projectPath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-                outputPath = os.path.join(projectPath, "Outputs")
-                saveFilePath = os.path.join(outputPath, os.path.basename(arguments[4]))
-                saveFile = open(saveFilePath, "a+")
-                if isValidCSV(saveFilePath):
-                    saveFile.close()
-                    writeNestedListToCSVRows(data, saveFilePath)
-                    print("Successfully saved to " + saveFilePath)
-                elif isValidTSV(saveFilePath):
-                    saveFile.close()
-                    writeNestedListToTSVRows(data, saveFilePath)
-                    print("Successfully saved to " + saveFilePath)
-                else:
-                    saveFile.close()
-                    os.remove(saveFilePath)
-                    print("[Error] Could not save data. Invalid TSV or CSV file path: " + saveFilePath)
-                    print(data)
+            print(data)
+            if len(arguments) != 5: return
+            saveFilePath = os.path.join(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                                                     "Outputs"), os.path.basename(arguments[4]))
+            saveFile = open(saveFilePath, "a+")
+            saveFile.close()
+            if isValidCSV(saveFilePath) or isValidTSV(saveFilePath):
+                writeNestedListToRows(data, saveFilePath)
+                print("Successfully saved to " + saveFilePath)
             else:
-                print(data)
+                os.remove(saveFilePath)
+                print("[Error] Could not save data. Invalid TSV or CSV file path: " + saveFilePath)
 
 
 if __name__ == '__main__':
