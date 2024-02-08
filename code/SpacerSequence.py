@@ -24,6 +24,7 @@ class TargetSequence:
         self.mismatches = self.countMismatches()
         self.off_target_score = None
         self.on_target_score = None
+        self.total_alignments = None
 
     def countMismatches(self):
         spacer_DNA = convertToDNA(self.spacer_to_align)
@@ -127,9 +128,7 @@ class SpacerSequence:
             print("Input sequence is not a valid spacer sequence: " + spacerOrTargetSequence)
             return
         self.__spacerSequence = convertToDNA(spacerOrTargetSequence[0:20])
-        print("DEBUG: Finding targets from spacer for sequence " + self.__spacerSequence)
-        targetSequencesInfo = genome.bowtieFindTargetsFromSpacer(self.__spacerSequence)
-        print("DEBUG: Found " + str(len(targetSequencesInfo)) + " targets from spacer for sequence " + self.__spacerSequence)
+        targetSequencesInfo, self.total_alignments = genome.bowtieFindTargetsFromSpacer(self.__spacerSequence)
         for targetSequenceInfo in targetSequencesInfo: # Instantiate all target sequences and calculate on-target scores
             targetInstance = TargetSequence(self, targetSequenceInfo[0], targetSequenceInfo[1])
             if targetInstance.sequence_type == "On-Target":
@@ -138,8 +137,8 @@ class SpacerSequence:
             self.__targets.append(targetInstance)
 
         for targetSequence in self.__targets: # Now calculate off-target scores (which require an on-target)
-            if targetInstance.sequence_type == "Off-Target":
-                targetInstance.calculateScores()
+            if targetSequence.sequence_type == "Off-Target":
+                targetSequence.calculateScores()
 
     def calcOnTargetScore(self, targetSequence):
         """Method that takes in a 35 bp guide DNA sequence and returns the calculated on-target score of it, assuming a
@@ -239,6 +238,12 @@ class SpacerSequence:
         general heuristic to measure the effectiveness of the guide sequence. """
         heuristic = 0
         return heuristic
+
+    def getTotalAlignments(self):
+        """Method that returns the total number of alignments (on-targets, off-targets, and those without PAMs)
+         of the instance."""
+        return self.total_alignments
+
 
     def getSpacerSequence(self):
         """Method that returns the 20 bp string RNA spacer sequence of the instance."""

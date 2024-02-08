@@ -102,6 +102,7 @@ class MetaGenome:
                     # If so, we fetch the full reference sequence that contains the target.
                     referenceSequence = fastaFile.fetch(reference=alignedSegment.reference_name)
                     for alignedBlock in alignedSegment.get_blocks():
+                        alignments = alignments + 1
                         # The below conditional checks if there are 6 bps around the aligned sequence - we need that
                         # much spacing for our on-target analysis.
                         if alignedBlock[0] >= 6 and alignedBlock[1] <= len(referenceSequence) - 9:
@@ -113,8 +114,6 @@ class MetaGenome:
                                     and sum(n1 != n2 for n1, n2 in zip(surroundingTargetSequence[6:26],sequence_to_align)) <= 5:
                                 targetSequenceInfo = [surroundingTargetSequence, alignedSegment.reference_name]
                                 foundTargets.append(targetSequenceInfo)
-                                print("Aligned spacer " + sequence_to_align + " versus target " + surroundingTargetSequence)
-                                alignments += 1
                             else:
                                 # Otherwise, we check for the reverse complement of the target sequence:
                                 surroundingTargetSequence =  referenceSequence[alignedBlock[0] - 9:alignedBlock[1] + 6]
@@ -123,12 +122,9 @@ class MetaGenome:
                                         and sum(n1 != n2 for n1, n2 in zip(surroundingTargetSequence[6:26],sequence_to_align)) <= 5:
                                     targetSequenceInfo = [surroundingTargetSequence, alignedSegment.reference_name]
                                     foundTargets.append(targetSequenceInfo)
-                                    print("Aligned spacer " + sequence_to_align + " versus target " + surroundingTargetSequence)
-                                    alignments += 1
             fastaFile.close()
             alignmentFile.close()
-        print("Identified " + str(alignments) + " alignments for spacer sequence: " + convertToDNA(spacerSequence))
-        return foundTargets
+        return [foundTargets, alignments]
 
 
 

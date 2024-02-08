@@ -121,6 +121,7 @@ def appendSpacerToData(data, spacer):
         print("Incorrect type given for data: " + type(data))
         return data
     data.append(["Spacer",
+                 "Total Alignments",
                  "Sequence_Type",
                  "Location",
                  "Sequence",
@@ -130,8 +131,10 @@ def appendSpacerToData(data, spacer):
                  "Off_Target_Score"])
     targets = spacer.getTargets()
     spacer_sequence = spacer.getSpacerSequence()
+    total_alignments = spacer.getTotalAlignments()
     for targetSequence in targets:
         data.append([spacer_sequence,
+                     total_alignments,
                      targetSequence.sequence_type,
                      targetSequence.location,
                      targetSequence.target_sequence,
@@ -152,6 +155,7 @@ def writeNestedListToRows(nestedList, saveFilePath):
         writeNestedListToTSVRows(nestedList, saveFilePath)
     else:
         print("Invalid TSV/CSV file input.")
+
 
 def writeNestedListToCSVRows(nestedList, saveFilePath):
     """Takes in a nested list containing data and a .CSV save file name (WITH the file type extension), writes the
