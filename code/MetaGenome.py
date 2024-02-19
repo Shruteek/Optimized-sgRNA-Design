@@ -82,7 +82,7 @@ class MetaGenome:
                 print("Index " + indexName + " does not exist. Building...")
                 os.system("bowtie2-build " + self.__OriginalPath + " " + bowtieIndexPath)
 
-            bowtie2Options = "-a --mp 1,1 -N 5 --np 0 --score-min L,-5,0 " # Include -a for all alignments?
+            bowtie2Options = "-a --mp 1,1 -N 1 -L 10 --np 0 --score-min L,-5,0 " # Include -a for all alignments?
             if os.path.exists(bowtieIndexPath + ".rev.2.bt2") or os.path.exists(bowtieIndexPath + ".rev.2.bt2l"):
                 print("Aligning spacer sequence " + sequence_to_align + " to Bowtie2 index at " + bowtieIndexPath)
                 os.system("bowtie2 " + bowtie2Options
